@@ -1,0 +1,215 @@
+boobst
+	; http://localhost:57772/csp/docbook/DocBook.UI.Page.cls?KEY=GIOD_tcp
+	q
+starter(msg)
+ s lv="boobstServer"_$$port()
+ l +@(lv):0 e  s msg="already running" w msg QUIT
+ l -@(lv) s msg="start on "_$$port()
+ j start($$port())
+ q	
+port() 
+	q 6666
+	;
+version()
+	q 7
+start(Port)
+	n io,port,x,lv
+
+	s port=$g(Port,$$port())
+	s lv="boobstServer"_port
+	l +@(lv):0 e  w "already running" QUIT  ; already running
+	;
+	s io="|TCP|1" 
+
+	;o io:(/TRA=0:port:"PTAS":/NODELAY=0):20 e  w "port served" QUIT
+	o io:(/TRA=0:port:"CPAS":/NODELAY=0):20 e  w "port served" QUIT
+	w "Boobst Server v.0."_$$version()_" started on Port:"_port,!
+	u io
+serverLoop
+	r x
+	j child:(:5:io:io)
+	g serverLoop
+	;
+child
+	;
+	u $io:(/IOTABLE="UTF8"::"-Q+W":$c(0))
+	d command
+	QUIT
+	;
+
+cleardown
+	;
+	n ignore,pid
+	;
+	s pid=""
+	f  s pid=$o(^boobst("connected",pid)) q:pid=""  d
+	. i pid=$j q
+	. s ignore=1
+	. l +^boobst("connected",pid):0 e  s ignore=0
+	. i ignore d
+	. . l -^boobst("connected",pid)
+	. . k ^boobst("connected",pid)
+	. . k ^boobst("monitor","listener",pid)
+	. . k ^boobst("monitor","output",pid)
+	s pid=""
+	f  s pid=$o(^boobst("monitor","output",pid)) q:pid=""  d
+	. i pid=$j q
+	. s ignore=1
+	. l +^boobst("connected",pid):0 e  s ignore=0
+	. l -^boobst("connected",pid)
+	. i ignore d
+	. . k ^boobst("monitor","output",pid)
+	QUIT 
+ 
+command ;
+	n authNeeded,c,crlf,input,output
+	;
+	;d cleardown
+	s ^boobst("connected",$j)=""
+	l +^boobst("connected",$j)
+	w $$version()_";"_$j_";"_$zu(5)
+	write *-3
+loop
+	s crlf=$c(13,10)
+	;s %CGIEVAR("AUTH_PASSWORD")=""
+	;s %CGIEVAR("AUTH_TYPE")=""
+	s %CGIEVAR("CONTENT_TYPE")=""
+	s %CGIEVAR("GATEWAY_INTERFACE")="CGI/1.1"
+	s %CGIEVAR("HTTP_AUTHORIZATION")=""
+	s %CGIEVAR("HTTP_COOKIE")=""
+	s %CGIEVAR("HTTP_REFERER")=""
+	;s %CGIEVAR("HTTP_SOAPACTION")=""
+	s %CGIEVAR("PATH_TRANSLATED")="C:/proj/js/cgi-bin/nph-mgwcgi.exe"
+	s %CGIEVAR("REMOTE_HOST")=""
+	s %CGIEVAR("REMOTE_IDENT")=""
+	s %CGIEVAR("REMOTE_USER")=""
+	s %CGIEVAR("REQUEST_METHOD")="GET"
+	s %CGIEVAR("SERVER_PORT")=80
+	s %CGIEVAR("SERVER_PROTOCOL")="HTTP/1.1"
+	s %CGIEVAR("SERVER_SOFTWARE")="Node.js"
+	s %KEY("MGWLIB")="/cgi-bin/nph-mgwcgi.exe"
+	d var^bscito
+	d VAR^bsg
+	do MAINVAR^bsg
+loop2 
+	r *c
+	r input s input=$c(c)_input
+	s input=$e(input,1,$l(input)-1)
+	;s ^boobst("cmd",$i(^boobst("cmd"))) = input
+	i input="PING" s output="+PONG"_crlf w output g loop2
+	i input="" g loop
+	i $e(input,1,2)="S " d set($e(input,3,$l(input))) g loop2
+	i $e(input,1,2)="Q " d setKey($e(input,3,$l(input))) g loop2
+	i $e(input,1,2)="K " d kill($e(input,3,$l(input))) g loop2
+	i $e(input,1,2)="G " d get($e(input,3,$l(input))) g loop2
+	i $e(input,1,2)="Z " d zn($e(input,3,$l(input))) g loop
+	i $e(input,1,2)="B " d blob($e(input,3,$l(input))) g loopBlob
+	i $e(input,1,2)="E " d exec($e(input,3,$l(input))) g loop
+	i input="F" d flush g loop
+	i input="P" d ping g loop2
+	i $e(input,1,2)="8 " d setEncoding($e(input,3,$l(input))) g loop2
+	;i input="UTF8" u $io:(/IOTABLE="UTF8"::"-Q+W":$c(0)) g loop
+	;i input="RAW" u $io:(/IOTABLE="RAW"::"-Q+W":$c(0)) g loop
+	i input="EXIT" g halt
+	i input="QUIT" g quit
+	i input="HALT" g halt
+	s output="-"_input_"- not recognized"_crlf w output
+	d end
+	g loop2
+	;
+blob(name)
+	set type = $p(name,"://",1)
+	set where = $p(name,"://",2)
+	use $io:(/IOTABLE="RAW"::"-TS"::32000)	
+	i type="file" d
+	.	set IO=$IO
+	.	open where:"WNS"
+	else  i type="global" do
+	.	set it = 0
+	.	set where = "^"_where
+	set ^test("it")=where
+	quit
+	;
+loopBlob
+	read *c
+	read input s input=$c(c)_input
+	set input=$e(input,1,$l(input))
+	if type="global" do
+	.	set it = it + 1
+	.	set @where@(it)=input
+	else  if type="file" do
+	.	use where:(/IOTABLE="RAW"::"-Q+W"::32000)
+	.	write input
+	.	use IO:(/IOTABLE="RAW"::"-TS"::32000)
+	g loopBlob
+	;
+halt
+	k ^boobst("connected",$j)
+	halt
+	;
+quit
+	;
+	i '$d(^boobst("monitor","listener",$j)) g halt
+	k ^boobst("monitor","listener",$j)
+	g loop
+	;
+kill(name)
+	k @name
+	w "ok.kill"
+	d end
+	quit
+	;
+setEncoding(name)
+	u $io:(/IOTABLE=name::"-Q+W":$c(0))
+	w "ok.setEncoding"
+	d end
+	quit
+setKey(input)
+	n %nameOfVariable
+	s %nameOfVariable = $p(input,$c(1),1)
+	s @%nameOfVariable = $e(input,$l(%nameOfVariable)+2,*)	
+	s %KEY(%nameOfVariable) = @%nameOfVariable
+	w "ok.setKey"
+	d end
+	quit
+	;
+set(input)
+	n %nameOfVariable
+	s %nameOfVariable = $p(input,$c(1),1)
+	s @%nameOfVariable = $e(input,$l(%nameOfVariable)+2,*)
+	w "ok.set"
+	d end
+	quit
+	;
+get(name)
+	write @name
+	d end
+	quit
+	;
+zn(name)
+	zn name
+	w "ok.zn."_$zu(5)
+	write *-3
+	quit
+	;	
+exec(%nameOfRoutine)
+	do @%nameOfRoutine
+	do end
+	kill
+	u $io:(/IOTABLE="UTF8"::"-Q+W":$c(0))
+	quit
+flush
+	kill
+	w "ok.flush"
+	u $io:(/IOTABLE="UTF8"::"-Q+W":$c(0))
+	do end
+	quit
+ping
+	w "pong!"
+	do end
+	quit
+end
+	;write $c(0)
+	write $c(6)_$c(6)
+	write *-3
+	quit
