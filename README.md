@@ -17,7 +17,8 @@ Licensed under the The GNU Affero General Public License which can be found at w
 
 ``` Javascript
 var BoobstSocket = require('./boobst').BoobstSocket
-    , assert = require('assert');
+    , assert = require('assert')
+    ;
 
 var bs = new BoobstSocket({
     host: 'localhost'
@@ -30,6 +31,7 @@ bs.connect(function(err){
         this.set('^test(1)', test, function(err) {
             this.get('^test(1)', function(err, data) {
                 assert.equal(data, test, 'should be "test"');
+                this.disconnect();
             });
         });
     });
@@ -96,9 +98,38 @@ bs.set('a', 'value', function(err) {
 });
 ```
 
+Considering that commands send to the database in series, we can write code to execute without callbacks.
+
+``` Javascript
+bs.set('a', '2');
+bs.set('b', '2');
+bs.execute('multAB^test' /**program body: "w a*b q"*/, function(err, data) {
+    if (err) { console.log(err); return; }
+    console.log(data === '4' ? 'successfully executed': 'something wrong');
+});
+```
+
+### SaveObject
+
+Save JSON objects in database. Mapping JSON to globals is similar to document storage in this paper: http://www.mgateway.com/docs/universalNoSQL.pdf pp. 19-21
+
+``` Javascript
+var obj = {
+    a: {
+        b: 1
+    },
+    c: [1, 2, 3],
+    d: 'e'
+};
+bs.saveObject('^test' obj, function(err) {
+    if (err) { console.log(err); return; }
+    console.log('object saved');
+});
+```
+
 ### Blob
 
-Send stream to the server. file://path/to/the/file saves file on the disk, global://blob saves file into global.
+Send stream to the database server. file://path/to/the/file saves file on the disk, global://blob saves file into global.
 
 ``` Javascript
 bs.blob('global://blob', fs.createReadStream('/home/und/00109721.jpg'), function(err) {
