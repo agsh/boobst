@@ -2,7 +2,7 @@
 
 An Intersystems Caché driver that implements basic functionality and can run routines.
 Several things have yet to be implemented, but the driver can be used for simple use-cases.
-Server part was inspired by [M.Wire](https://github.com/robtweed/mdb) project.
+Server part was inspired by [M.Wire](https://github.com/robtweed/mdb) project. I took from it infinitive loop organization, fork methods and open/use directives.
 
 Main goal of this project is to replace Apache + Weblink connection with Node.js server.
 
