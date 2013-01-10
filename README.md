@@ -25,6 +25,7 @@ var bs = new BoobstSocket({
 });
 bs.connect(function(err){
     var test = 'test';
+    // 'this' refers to the socket itself
     this.zn('USER', function(err, changed){
         this.set('^test(1)', test, function(err) {
             this.get('^test(1)', function(err, data) {
@@ -67,5 +68,41 @@ Kill global variable.
 bs.kill('^var("a",1)', function(err) {
     if (err) { console.log(err); return; }
     console.log('done');
+});
+```
+
+### Zn
+
+Change namespace
+
+``` Javascript
+bs.zn('%SYS', function(err, switched) {
+    if (err) { console.log(err); return; }
+    console.log(switched ? 'successfully changed namespace' : 'already been there');
+});
+```
+
+### Exec
+
+Executes the routine. All local variables set previously are available in the routine.
+
+``` Javascript
+bs.set('a', 'value', function(err) {
+    if (err) { console.log(err); return; }
+    this.execute('showVarA^test' /**program body: "w a q"*/, function(err, data) {
+        if (err) { console.log(err); return; }
+        console.log(data === 'value' ? 'successfully executed': 'something wrong');
+    });
+});
+```
+
+### Blob
+
+Send stream to the server. file://path/to/the/file saves file on the disk, global://blob saves file into global.
+
+``` Javascript
+bs.blob('global://blob', fs.createReadStream('/home/und/00109721.jpg'), function(err) {
+	if (err) { console.log(err); return; }
+    console.log('file saved');
 });
 ```
