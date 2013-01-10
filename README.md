@@ -1,8 +1,8 @@
-# Boobst. Caché driver for Node.js
+# Boobst. Node.js Caché driver
 
-A Caché driver that implements basic functionality and can run routines.
+An Intersystems Caché driver that implements basic functionality and can run routines.
 Several things have yet to be implemented, but the driver can be used for simple use-cases.
-Server part was inspired by [M.Wire|https://github.com/robtweed/mdb] project.
+Server part was inspired by [M.Wire](https://github.com/robtweed/mdb) project.
 
 Main goal of this project is to replace Apache + Weblink connection with Node.js server.
 
