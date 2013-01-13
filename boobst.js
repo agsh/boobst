@@ -16,6 +16,7 @@ const
 	EOL = ' ' + String.fromCharCode(0) // TODO избавиться от лишнего байта в s input=$e(input,1,$l(input)-1)
 	, EON = String.fromCharCode(1)
 	, VERSION = 7
+	, VALIDCACHEVARRE = /^\^?[A-Za-z]+[\w\d]*(\(("[A-Za-z0-9]+"|\d)(,("[A-Za-z0-9]+"|\d))*\))?$/
 	, BCMD = {
 		NOP: 0
 		, SET: 1
@@ -400,6 +401,7 @@ BoobstSocket.prototype.execute = function(name, outStream, callback) {
  * @param {function(this:boobst.BoobstSocket, (null|Error), Object)} callback Функция-коллбэк (error, data)
  */
 BoobstSocket.prototype.get = function(name, callback) {
+	isValidCacheVar(name);
 	this._tryCommand({
 		cmd: BCMD.GET,
 		name: name,
@@ -407,6 +409,7 @@ BoobstSocket.prototype.get = function(name, callback) {
 	});
 };
 BoobstSocket.prototype.key = function(name, value, callback) {
+	isValidCacheVar(name);
 	this._tryCommand({
 		cmd: BCMD.KEY,
 		name: name,
@@ -430,6 +433,7 @@ BoobstSocket.prototype.setEncoding = function(value, callback) {
  * @return {boobst.BoobstSocket}
  */
 BoobstSocket.prototype.set = function(name, value, callback) {
+	isValidCacheVar(name);
 	this._tryCommand({
 		cmd: BCMD.SET,
 		name: name,
@@ -464,6 +468,7 @@ BoobstSocket.prototype.zn = function(name, callback) {
  * @param {function(this:boobst.BoobstSocket, (null|Error))} [callback] callback
  */
 BoobstSocket.prototype.kill = function(name, callback) {
+	isValidCacheVar(name);
 	this._tryCommand({
 		cmd: BCMD.KILL,
 		name: name,
@@ -478,6 +483,13 @@ BoobstSocket.prototype.kill = function(name, callback) {
  * @param {function(this:boobst.BoobstSocket, (null|Error))} [callback] callback
  */
 BoobstSocket.prototype.blob = function(uri, stream, callback) {
+	var arr = uri.split('://');
+	if (arr.length !== 2) {
+		throw new Error('Invalid uri for blob command: "' + uri + '"');
+	}
+	if (arr[0] === 'global') {
+		isValidCacheVar(arr[1]);
+	}
 	this._tryCommand({
 		cmd: BCMD.BLOB
 		, stream: stream
@@ -530,6 +542,7 @@ BoobstSocket.prototype._runCommandFromQueue = function() {
  */
 BoobstSocket.prototype.saveObject = function(variable, object, callback) {
 	//console.log(object);
+	isValidCacheVar(variable);
 	this._saveObject(variable, object, []);
 	this.ping(function(err, data) {
 		if (!err && data === 'pong!') {
@@ -571,6 +584,12 @@ BoobstSocket.prototype._saveObject = function(variable, object, stack) {
 	});
 };
 //--------------------------------------------------------------------------
+function isValidCacheVar(name) {
+	if (!VALIDCACHEVARRE.test(name)) {
+		throw new Error('"' + name + "\" isn't a valid Cache' variable name");
+	}
+}
+
 BoobstSocket.prototype.error = function(text) {
 	console.log('\u001b[41mSocket ' + this.id + ': ' + text + '\u001b[0m');
 };
