@@ -2,11 +2,11 @@ boobst
 	; http://localhost:57772/csp/docbook/DocBook.UI.Page.cls?KEY=GIOD_tcp
 	q
 starter(msg)
- s lv="boobstServer"_$$port()
- l +@(lv):0 e  s msg="already running" w msg QUIT
- l -@(lv) s msg="start on "_$$port()
- j start($$port())
- q	
+	s lv="boobstServer"_$$port()
+	l +@(lv):0 e  s msg="already running" w msg QUIT
+	l -@(lv) s msg="started on "_$$port()
+	j start($$port())
+	q	
 port() 
 	q 6666
 	;
@@ -117,17 +117,18 @@ loop2
 	d end
 	g loop2
 	;
-blob(name)
-	set type = $p(name,"://",1)
-	set where = $p(name,"://",2)
+blob(%uname)
+	set type = $p(%uname,"://",1)
+	set where = $p(%uname,"://",2)
 	use $io:(/IOTABLE="RAW"::"-TS"::32000)	
 	i type="file" d
 	.	set IO=$IO
 	.	open where:"WNS"
-	else  i type="global" do
+	else  if type="global" do
 	.	set it = 0
 	.	set where = "^"_where
-	set ^test("it")=where
+	set ^test("where")=where
+	set ^test("type")=type
 	quit
 	;
 loopBlob
@@ -153,47 +154,47 @@ quit
 	k ^boobst("monitor","listener",$j)
 	g loop
 	;
-kill(name)
-	k @name
+kill(%uname)
+	k @%uname
 	w "ok.kill"
 	d end
 	quit
 	;
-setEncoding(name)
-	u $io:(/IOTABLE=name::"-Q+W":$c(0))
+setEncoding(%uname)
+	u $io:(/IOTABLE=%uname::"-Q+W":$c(0))
 	w "ok.setEncoding"
 	d end
 	quit
-setKey(input)
+setKey(%uname)
 	n %nameOfVariable
-	s %nameOfVariable = $p(input,$c(1),1)
-	s @%nameOfVariable = $e(input,$l(%nameOfVariable)+2,*)	
+	s %nameOfVariable = $p(%uname,$c(1),1)
+	s @%nameOfVariable = $e(%uname,$l(%nameOfVariable)+2,*)	
 	s %KEY(%nameOfVariable) = @%nameOfVariable
 	w "ok.setKey"
 	d end
 	quit
 	;
-set(input)
+set(%uname)
 	n %nameOfVariable
-	s %nameOfVariable = $p(input,$c(1),1)
-	s @%nameOfVariable = $e(input,$l(%nameOfVariable)+2,*)
+	s %nameOfVariable = $p(%uname,$c(1),1)
+	s @%nameOfVariable = $e(%uname,$l(%nameOfVariable)+2,*)
 	w "ok.set"
 	d end
 	quit
 	;
-get(name)
-	write @name
+get(%uname)
+	write @%uname
 	d end
 	quit
 	;
-zn(name)
-	zn name
+zn(%unameOfNamespace)
+	zn %unameOfNamespace
 	w "ok.zn."_$zu(5)
 	write *-3
 	quit
 	;	
-exec(%nameOfRoutine)
-	do @%nameOfRoutine
+exec(%unameOfRoutine)
+	do @%unameOfRoutine
 	do end
 	kill
 	u $io:(/IOTABLE="UTF8"::"-Q+W":$c(0))
