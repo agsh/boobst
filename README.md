@@ -112,6 +112,17 @@ bs.execute('multAB^test' /**program body: "w a*b q"*/, function(err, data) {
 ### SaveObject
 
 Save JSON objects in database. Mapping JSON to globals is similar to document storage in this paper: http://www.mgateway.com/docs/universalNoSQL.pdf pp. 19-21
+``` JSON
+{
+    "array": ["a", "ab", "abc"],
+    "object": {
+        a: "a",
+        b: 2
+    },
+    "boolean": true,
+    "number": 42
+}
+```
 
 ``` Javascript
 var obj = {

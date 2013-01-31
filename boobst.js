@@ -4,6 +4,7 @@
  * Для отладки используйте метод .emit('debug')
  * @author Andrew D. Laptev <a.d.laptev@gmail.com>
  * @version 0.7
+ * @license AGPL
  **/
 
 /*global console, exports, process, require */
@@ -16,7 +17,7 @@ const
 	EOL = ' ' + String.fromCharCode(0) // TODO избавиться от лишнего байта в s input=$e(input,1,$l(input)-1)
 	, EON = String.fromCharCode(1)
 	, VERSION = 7
-	, VALIDCACHEVARRE = /^\^?[A-Za-z]+[\w\d]*(\(("[A-Za-z0-9]+"|\d)(,("[A-Za-z0-9]+"|\d))*\))?$/
+	, VALIDCACHEVARRE = /^(\^|%)?[A-Za-z]+[\w\d]*(\(("[A-Za-z\-0-9]+"|\d)(,("[A-Za-z\-0-9]+"|\d))*\))?$/
 	, BCMD = {
 		NOP: 0
 		, SET: 1

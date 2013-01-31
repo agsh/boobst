@@ -188,7 +188,7 @@ get(%uname)
 	quit
 	;
 zn(%unameOfNamespace)
-	zn %unameOfNamespace
+	zn @%unameOfNamespace
 	w "ok.zn."_$zu(5)
 	write *-3
 	quit
