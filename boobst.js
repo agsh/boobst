@@ -17,7 +17,7 @@ const
 	EOL = ' ' + String.fromCharCode(0) // TODO избавиться от лишнего байта в s input=$e(input,1,$l(input)-1)
 	, EON = String.fromCharCode(1)
 	, VERSION = 7
-	, VALIDCACHEVARRE = /^(\^|%)?[A-Za-z]+[\w\d]*(\(("[A-Za-z\-0-9]+"|\d)(,("[A-Za-z\-0-9]+"|\d))*\))?$/
+	, VALIDCACHEVARRE = /^(\^|%)?[A-Za-z]+[\w\d]*(\(("[A-Za-z_\-0-9]+"|\d)(,("[A-Za-z_\-0-9]+"|\d))*\))?$/
 	, BCMD = {
 		NOP: 0
 		, SET: 1
