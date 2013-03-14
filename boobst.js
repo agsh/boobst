@@ -3,7 +3,7 @@
  * Маленький клиент для работы с СУБД Cache'
  * Для отладки используйте метод .emit('debug')
  * @author Andrew D. Laptev <a.d.laptev@gmail.com>
- * @version 0.7
+ * @version 0.7.1
  * @license AGPL
  **/
 
@@ -428,12 +428,20 @@ BoobstSocket.prototype.setEncoding = function(value, callback) {
 
 /**
  * Установить значение переменной или глобала
- * @param {string} name имя переменной или глобала (начинаятся с ^)
- * @param {string|Buffer} value значение переменной, меньше 32к
+ * @param {string} name имя переменной или глобала (начинается с ^)
+ * @param {Array<string>} [subscript]
+ * @param {string|Buffer} value значение переменной, меньше 32к //TODO 32kb
  * @param {function(this:boobst.BoobstSocket, (null|Error), string)} [callback] callback
  * @return {boobst.BoobstSocket}
  */
-BoobstSocket.prototype.set = function(name, value, callback) {
+BoobstSocket.prototype.set = function(name, subscript, value, callback) {
+	this.emit('debug', 'This use of function "set" is deprecated');
+	if (typeof value === 'function' || typeof value === 'undefined') {
+		callback = value;
+		value = subscript;
+	} else {
+		name = name + '(' + subscript.map(function(sub) {return '"' + sub + '"';}).join(',') + ')';
+	}
 	isValidCacheVar(name);
 	this._tryCommand({
 		cmd: BCMD.SET,
@@ -537,14 +545,21 @@ BoobstSocket.prototype._runCommandFromQueue = function() {
 
 /**
  * Сохранить в каше javascript-объект
- * @param {String} variable имя переменной или глобала (начинается с ^)
+ * @param {string} name имя переменной или глобала (начинается с ^)
+ * @param {Array.<string>} [subscript]
  * @param {Object} object js-объект
- * @param {Function} [callback] callback
+ * @param {function(?Error)} [callback] callback
  */
-BoobstSocket.prototype.saveObject = function(variable, object, callback) {
+
+BoobstSocket.prototype.saveObject = function(name, subscript, object, callback) {
 	//console.log(object);
-	isValidCacheVar(variable);
-	this._saveObject(variable, object, []);
+	if (typeof object === 'function' || typeof object === 'undefined') {
+		callback = object;
+		object = subscript;
+		subscript = [];
+	}
+	// TODO проверка на названия переменных в каше
+	this._saveObject(name, object, subscript);
 	this.ping(function(err, data) {
 		if (!err && data === 'pong!') {
 			if (callback) {

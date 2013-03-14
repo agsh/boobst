@@ -109,6 +109,12 @@ bs.execute('multAB^test' /**program body: "w a*b q"*/, function(err, data) {
 });
 ```
 
+Also, these two commands are equivalent and second version is preferable :
+``` Javascript
+bs.set('a("abc",1)', 5);
+bs.set('a', ['abc', 1], 5);
+```
+
 ### SaveObject
 
 Save JSON objects in database. Mapping JSON to globals is similar to document storage in this paper: http://www.mgateway.com/docs/universalNoSQL.pdf pp. 19-21
@@ -132,7 +138,16 @@ var obj = {
     c: [1, 2, 3],
     d: 'e'
 };
-bs.saveObject('^test' obj, function(err) {
+
+bs.saveObject('^test', obj, function(err) {
+    if (err) { console.log(err); return; }
+    console.log('object saved');
+});
+```
+
+Or if we use subscripts:
+``` Javascript
+bs.saveObject('^test', ['sub1', 'sub2'], obj, function(err) {
     if (err) { console.log(err); return; }
     console.log('object saved');
 });
