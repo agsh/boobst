@@ -1,5 +1,5 @@
 const VERSION = 7
-	, SERVER = "10.30.2.3"
+	, SERVER = "10.30.2.4"
 	, PORT = 6666
 	, NS = 'USER';
 
@@ -28,21 +28,19 @@ exports["Проверка соединения с адресом " + SERVER] = f
 };
 
 exports["Получение несуществующего значения глобала. Установка, получение и удаление существующего"] = function(test) {
-	var GL_NAME = '^test(13)'
+	var GL_NAME = '^test("17")'
 		, GL_DATA = 'SOME DATA';
 	var socket = new BoobstSocket({
 		host: SERVER
 		, port: PORT
 	});
-	socket.connect(function(err){
+	socket.connect(function(err) {
 		test.ok(!err, 'Присоединились');
-		this.get(GL_NAME, function(err, data){
+		this.get(GL_NAME, function(err, data) {
 			test.ok(err, "Должна быть ошибка, т.к. данного глобала нет.");
-			//console.log("Ошибка:");
-			//console.log(err);
-			this.set(GL_NAME, GL_DATA, function(err){
+			this.set(GL_NAME, GL_DATA, function(err) {
 				test.ok(!err, 'Ошибок быть не должно');
-				this.get(GL_NAME, function(err, data){
+				this.get(GL_NAME, function(err, data) {
 					test.ok(!err, 'Ошибок быть не должно');
 					test.equal(data, GL_DATA, 'Данные должны совпадать');
 					this.kill(GL_NAME, function(err){
