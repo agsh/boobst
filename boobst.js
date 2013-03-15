@@ -501,7 +501,7 @@ BoobstSocket.prototype.kill = function(name, subscript, callback) {
 		isValidCacheVar(name);
 		callback = subscript
 	} else {
-		createNameFromSubscript(name, subscript);
+		name = createNameFromSubscript(name, subscript);
 	}
 	this._tryCommand({
 		cmd: BCMD.KILL,
