@@ -3,7 +3,7 @@
  * Маленький клиент для работы с СУБД Cache'
  * Для отладки используйте метод .emit('debug')
  * @author Andrew D. Laptev <a.d.laptev@gmail.com>
- * @version 0.7.1
+ * @version 0.7.2
  * @license AGPL
  **/
 
@@ -153,6 +153,9 @@ var BoobstSocket = function(options) {
 	 * @type {string}
 	 */
 	this.host = options.host || options.server || 'localhost';
+	if (options.ns) {
+		this.ns = options.ns;
+	}
 	this.command = BCMD.HI;
 	/**
 	 * Сокет соединения
@@ -249,7 +252,6 @@ BoobstSocket.prototype.onDataGreeting = function(data){
 
 	// работаем с нужной нам версией протокола
 	this.id = parseInt(dataStr[1], 10);
-
 	// если при подключении мы находимся в отличной области, первым делом переключимся в нужную
 	if (this.ns) {
 		if (this.ns !== dataStr[2]) {
@@ -394,20 +396,28 @@ BoobstSocket.prototype.execute = function(name, outStream, callback) {
 		}
 	}
 	this._tryCommand(cmd);
+	return this;
 };
 
 /**
  * Получить значение
  * @param {string} name Имя переменной или узла глобала
+ * @param {Array<string>} subscript
  * @param {function(this:boobst.BoobstSocket, (null|Error), Object)} callback Функция-коллбэк (error, data)
  */
-BoobstSocket.prototype.get = function(name, callback) {
-	isValidCacheVar(name);
+BoobstSocket.prototype.get = function(name, subscript, callback) {
+	if (typeof subscript === 'function') {
+		isValidCacheVar(name);
+		callback = subscript;
+	} else {
+		name = createNameFromSubscript(name, subscript);
+	}
 	this._tryCommand({
 		cmd: BCMD.GET,
 		name: name,
 		callback: callback
 	});
+	return this;
 };
 BoobstSocket.prototype.key = function(name, value, callback) {
 	isValidCacheVar(name);
@@ -417,6 +427,7 @@ BoobstSocket.prototype.key = function(name, value, callback) {
 		value: value,
 		callback: callback
 	});
+	return this;
 };
 BoobstSocket.prototype.setEncoding = function(value, callback) {
 	this._tryCommand({
@@ -424,6 +435,7 @@ BoobstSocket.prototype.setEncoding = function(value, callback) {
 		value: value,
 		callback: callback
 	});
+	return this;
 };
 
 /**
@@ -435,21 +447,27 @@ BoobstSocket.prototype.setEncoding = function(value, callback) {
  * @return {boobst.BoobstSocket}
  */
 BoobstSocket.prototype.set = function(name, subscript, value, callback) {
-	this.emit('debug', 'This use of function "set" is deprecated');
-	if (typeof value === 'function' || typeof value === 'undefined') {
+	var typeOfValue = typeof value;
+	if (typeOfValue === 'function' || typeOfValue === 'undefined') {
 		callback = value;
 		value = subscript;
 	} else {
-		name = name + '(' + subscript.map(function(sub) {return '"' + sub + '"';}).join(',') + ')';
+		if (typeOfValue !== 'object') {
+			name = createNameFromSubscript(name, subscript);
+		}
 	}
-	isValidCacheVar(name);
-	this._tryCommand({
-		cmd: BCMD.SET,
-		name: name,
-		value: value,
-		callback: callback
-	});
-	return this;
+	if (typeOfValue === 'object') {
+		return BoobstSocket.prototype.saveObject.apply(this, arguments);
+	} else {
+		isValidCacheVar(name);
+		this._tryCommand({
+			cmd: BCMD.SET,
+			name: name,
+			value: value,
+			callback: callback
+		});
+		return this;
+	}
 };
 
 /**
@@ -469,20 +487,28 @@ BoobstSocket.prototype.zn = function(name, callback) {
 			callback.call(this, null, false);
 		}
 	}
+	return this;
 };
 
 /**
  * Удалить глобал или локал
  * @param {string} name
+ * @param {Array<string>} subscript
  * @param {function(this:boobst.BoobstSocket, (null|Error))} [callback] callback
  */
-BoobstSocket.prototype.kill = function(name, callback) {
-	isValidCacheVar(name);
+BoobstSocket.prototype.kill = function(name, subscript, callback) {
+	if (typeof callback === 'undefined') {
+		isValidCacheVar(name);
+		callback = subscript
+	} else {
+		createNameFromSubscript(name, subscript);
+	}
 	this._tryCommand({
 		cmd: BCMD.KILL,
 		name: name,
 		callback: callback
 	});
+	return this;
 };
 
 /**
@@ -505,6 +531,7 @@ BoobstSocket.prototype.blob = function(uri, stream, callback) {
 		, uri: uri
 		, callback: callback
 	});
+	return this;
 };
 
 /**
@@ -513,6 +540,7 @@ BoobstSocket.prototype.blob = function(uri, stream, callback) {
  */
 BoobstSocket.prototype.flush = function(callback) {
 	this._tryCommand({cmd: BCMD.FLUSH, callback: callback});
+	return this;
 };
 
 /**
@@ -521,6 +549,7 @@ BoobstSocket.prototype.flush = function(callback) {
  */
 BoobstSocket.prototype.ping = function(callback) {
 	this._tryCommand({cmd: BCMD.PING, callback: callback});
+	return this;
 };
 
 /**
@@ -530,6 +559,7 @@ BoobstSocket.prototype.ping = function(callback) {
 BoobstSocket.prototype.disconnect = function(callback) {
 	this.killme = true;
 	this._tryCommand({cmd: BCMD.DISCONNECT, callback: callback});
+	return this;
 };
 
 /**
@@ -571,6 +601,7 @@ BoobstSocket.prototype.saveObject = function(name, subscript, object, callback) 
 			}
 		}
 	});
+	return this;
 };
 
 /**
@@ -604,6 +635,10 @@ function isValidCacheVar(name) {
 	if (!VALIDCACHEVARRE.test(name)) {
 		throw new Error('"' + name + "\" isn't a valid Cache' variable name");
 	}
+}
+
+function createNameFromSubscript(name, subscript) {
+	return name + '(' + subscript.map(function(sub) {return '"' + sub + '"';}).join(',') + ')';
 }
 
 BoobstSocket.prototype.error = function(text) {
