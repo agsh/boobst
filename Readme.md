@@ -8,6 +8,14 @@ Main goal of this project is to replace Apache + Weblink connection with Node.js
 
 Licensed under the The GNU Affero General Public License which can be found at www.gnu.org/licenses/
 
+##Installation
+
+via npm:
+
+```
+npm install boobst
+```
+
 ## Usage
 
 1. Import Caché Object Script program `boobst.cos` to your Caché instance
