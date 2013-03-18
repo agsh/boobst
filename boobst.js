@@ -7,7 +7,7 @@
  * @license AGPL
  **/
 
-/*global console, exports, process, require */
+/*global exports, process, require */
 
 var net = require('net')
 	, util = require('util')
@@ -17,7 +17,7 @@ const
 	EOL = ' ' + String.fromCharCode(0) // TODO избавиться от лишнего байта в s input=$e(input,1,$l(input)-1)
 	, EON = String.fromCharCode(1)
 	, VERSION = 7
-	, VALIDCACHEVARRE = /^(\^|%)?[\-A-Z\.a-z]+[\w\d]*(\(("[A-Za-z_\-\.0-9]+"|\d)(,("[A-Za-z_\-\.0-9]+"|\d))*\))?$/
+	, VALIDCACHEVARRE = /^(\^|%)?[\-A-Z\.a-z]+[\w\d]*(\(("[A-Za-z_\-\.\+\\/0-9]+"|\d)(,("[A-Za-z_\-\.\+\\/0-9]+"|\d))*\))?$/
 	, BCMD = {
 		NOP: 0
 		, SET: 1
@@ -285,7 +285,6 @@ BoobstSocket.prototype.onDataZn = function(data) {
 		this.command = BCMD.NOP;
 		this._runCommandFromQueue();
 	}.bind(this));
-	//console.log(data.toString());
 	var str = data.toString().split('.');
 
 	if (str[0] === 'ok' && str[1] === 'zn') {
@@ -308,9 +307,7 @@ BoobstSocket.prototype.onDataZn = function(data) {
  * @private
  */
 BoobstSocket.prototype._tryCommand = function(commandObject) { // попытаться выполнить комманду
-	//this.error(commandObject.cmd + ':' + commandObject.uri + '>' + this.command);
 	if (this.command !== BCMD.NOP) {
-		//console.log(commandObject);
 		this.queue.push(commandObject);
 	} else {
 		this.data = "";
@@ -318,7 +315,6 @@ BoobstSocket.prototype._tryCommand = function(commandObject) { // попытат
 		this.callback = commandObject.callback;
 		switch (commandObject.cmd) {
 			case BCMD.EXECUTE:
-				//console.log('-> ' + commandObject.name);
 				if (commandObject.out) {
 					this.out = commandObject.out;
 				}
@@ -334,7 +330,6 @@ BoobstSocket.prototype._tryCommand = function(commandObject) { // попытат
 				this.socket.write('8 ' + commandObject.value + EOL);
 				break;
 			case BCMD.SET:
-				//console.log('S ' + commandObject.name + EON + commandObject.value + EOL);
 				this.socket.write('S ' + commandObject.name + EON + commandObject.value + EOL);
 				break;
 			case BCMD.KILL:
@@ -369,7 +364,7 @@ BoobstSocket.prototype._tryCommand = function(commandObject) { // попытат
 				break;
 			default:
 				this.error("unknown command");
-				console.log(commandObject);
+				this.error(commandObject);
 		}
 	}
 };
@@ -499,7 +494,7 @@ BoobstSocket.prototype.zn = function(name, callback) {
 BoobstSocket.prototype.kill = function(name, subscript, callback) {
 	if (typeof callback === 'undefined') {
 		isValidCacheVar(name);
-		callback = subscript
+		callback = (typeof subscript === 'function' ? subscript : null);
 	} else {
 		name = createNameFromSubscript(name, subscript);
 	}
@@ -582,7 +577,6 @@ BoobstSocket.prototype._runCommandFromQueue = function() {
  */
 
 BoobstSocket.prototype.saveObject = function(name, subscript, object, callback) {
-	//console.log(object);
 	if (typeof object === 'function' || typeof object === 'undefined') {
 		callback = object;
 		object = subscript;
@@ -626,7 +620,6 @@ BoobstSocket.prototype._saveObject = function(variable, object, stack) {
 				}
 			default:
 				self.set(variable + '("' + stack.join('","') + (stack.length > 0 ? '","' : "") + key.replace(/"/g, '""') + '")', object[key]);
-			//console.log('^' + global + '("' + stack.join('","') + (stack.length > 0 ? '","' : "") + key.replace(/"/g, '""') + '")=' + object[key]);
 		}
 	});
 };
@@ -638,14 +631,18 @@ function isValidCacheVar(name) {
 }
 
 function createNameFromSubscript(name, subscript) {
-	return name + '(' + subscript.map(function(sub) {return '"' + sub + '"';}).join(',') + ')';
+	if (subscript.length > 0) {
+		return name + '(' + subscript.map(function(sub) {return '"' + sub + '"';}).join(',') + ')';
+	} else {
+		return name;
+	}
 }
 
 BoobstSocket.prototype.error = function(text) {
-	console.log('\u001b[41mSocket ' + this.id + ': ' + text + '\u001b[0m');
+	this.emit('debug', text);
 };
 BoobstSocket.prototype.log = function(text) {
-	console.log('Socket ' + this.id + ': ' + text);
+	this.emit('debug', text);
 };
 //--------------------------------------------------------------------------
 BoobstSocket.prototype.port = 6666;
