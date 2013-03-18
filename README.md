@@ -27,13 +27,9 @@ var bs = new BoobstSocket({
 bs.connect(function(err){
     var test = 'test';
     // 'this' refers to the socket itself
-    this.zn('USER', function(err, changed){
-        this.set('^test(1)', test, function(err) {
-            this.get('^test(1)', function(err, data) {
-                assert.equal(data, test, 'should be "test"');
-                this.disconnect();
-            });
-        });
+    this.zn('USER').set('^test').get('^test', [1], function(err, data) {
+        assert.equal(data, test, 'should be "test"');
+        this.disconnect();
     });
 });
 ```
@@ -122,8 +118,8 @@ Save JSON objects in database. Mapping JSON to globals is similar to document st
 {
     "array": ["a", "ab", "abc"],
     "object": {
-        a: "a",
-        b: 2
+        "a": "a",
+        "b": 2
     },
     "boolean": true,
     "number": 42
@@ -145,7 +141,7 @@ bs.saveObject('^test', obj, function(err) {
 });
 ```
 
-Or if we use subscripts:
+Or, if we use subscripts:
 ``` Javascript
 bs.saveObject('^test', ['sub1', 'sub2'], obj, function(err) {
     if (err) { console.log(err); return; }

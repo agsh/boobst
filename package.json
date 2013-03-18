@@ -1,6 +1,6 @@
 {
 	"name": "boobst",
-	"version": "0.7",
+	"version": "0.7.3",
 	"author": "Andrew D.Laptev <a.d.laptev@gmail.com>",
 	"description": "Simple Node.js Caché driver",
 	"main": "./boobst",
