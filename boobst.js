@@ -17,7 +17,7 @@ const
 	EOL = ' ' + String.fromCharCode(0) // TODO избавиться от лишнего байта в s input=$e(input,1,$l(input)-1)
 	, EON = String.fromCharCode(1)
 	, VERSION = 7
-	, VALIDCACHEVARRE = /^(\^|%)?[\-A-Z\.a-z]+[\w\d]*(\(("[A-Za-z_\-\.\+\\/0-9]+"|\d)(,("[A-Za-z_\-\.\+\\/0-9]+"|\d))*\))?$/
+	, VALIDCACHEVARRE = /^\^?%?[\-A-Z\.a-z]+[\w\d]*(\(("[A-Za-z_\-\.\+\\/0-9]+"|\d)(,("[A-Za-z_\-\.\+\\/0-9]+"|\d))*\))?$/
 	, BCMD = {
 		NOP: 0
 		, SET: 1
@@ -281,10 +281,6 @@ BoobstSocket.prototype.onDataGreeting = function(data){
  * @param {buffer.Buffer} data информация о смене
  */
 BoobstSocket.prototype.onDataZn = function(data) {
-	process.nextTick(function(){
-		this.command = BCMD.NOP;
-		this._runCommandFromQueue();
-	}.bind(this));
 	var str = data.toString().split('.');
 
 	if (str[0] === 'ok' && str[1] === 'zn') {
@@ -298,6 +294,10 @@ BoobstSocket.prototype.onDataZn = function(data) {
 			this.callback.call(this, new Error(str));
 		}
 	}
+	process.nextTick(function(){
+		this.command = BCMD.NOP;
+		this._runCommandFromQueue();
+	}.bind(this));
 };
 //--------------------------------------------------------------------------
 /**
