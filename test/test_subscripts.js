@@ -14,19 +14,32 @@ bs.connect(function(err) {
 	if (err) {
 		throw err;
 	}
-	bs.zn('FOREST');
 	var js = {
-		a: [1, 2, 3]
+		f: [0, 1, 'g', 2, 3]
 		, b: {
 			c: 'd'
 		}
 	};
-	bs.saveObject('^test', [1, 2, 3], js, function(err, data) {
+	bs.zn('FOREST').kill('^test').set('^test', ['a'], js, function(err, data) {
 	//bs.set('^test', [0, 0, 0], js, function(err, data) {
 		if (err) {
 			throw err;
 		}
 		console.log('ok');
 		bs.disconnect();
+	}).set('^test', ['b','c'], js, function(err, data) {
+			//bs.set('^test', [0, 0, 0], js, function(err, data) {
+			if (err) {
+				throw err;
+			}
+			console.log('ok');
+			bs.disconnect();
+	}).kill('^test', ['a', 'f'], function(err) {
+			//bs.set('^test', [0, 0, 0], js, function(err, data) {
+			if (err) {
+				throw err;
+			}
+			console.log('ok');
+			bs.disconnect();
 	});
 });

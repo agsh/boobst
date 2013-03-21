@@ -17,7 +17,8 @@ const
 	EOL = ' ' + String.fromCharCode(0) // TODO избавиться от лишнего байта в s input=$e(input,1,$l(input)-1)
 	, EON = String.fromCharCode(1)
 	, VERSION = 7
-	, VALIDCACHEVARRE = /^\^?%?[\-A-Z\.a-z]+[\w\d]*(\(("[A-Za-z_\-\.\+\\/0-9]+"|\d)(,("[A-Za-z_\-\.\+\\/0-9]+"|\d))*\))?$/
+	, VALID_CACHE_VAR_RE = /^\^?%?[\-A-Z\.a-z]+[\w\d]*(\(("[A-Za-z_\-\.\+\\/0-9]+"|\d)(,("[A-Za-z_\-\.\+\\/0-9]+"|\d))*\))?$/
+	, CACHE_MAX_SIZE = 20000
 	, BCMD = {
 		NOP: 0
 		, SET: 1
@@ -310,7 +311,6 @@ BoobstSocket.prototype._tryCommand = function(commandObject) { // попытат
 	if (this.command !== BCMD.NOP) {
 		this.queue.push(commandObject);
 	} else {
-		console.log(JSON.stringify(commandObject));
 		this.data = "";
 		this.command = commandObject.cmd;
 		this.callback = commandObject.callback;
@@ -437,23 +437,28 @@ BoobstSocket.prototype.setEncoding = function(value, callback) {
 /**
  * Установить значение переменной или глобала
  * @param {string} name имя переменной или глобала (начинается с ^)
- * @param {Array<string>} [subscript]
- * @param {string|Buffer} value значение переменной, меньше 32к //TODO 32kb
- * @param {function(this:boobst.BoobstSocket, (null|Error), string)} [callback] callback
+ * @param {string|Buffer|Array<string>} [subscripts]
+ * @param {string|Buffer|function} value значение переменной, меньше 32к //TODO 32kb
+ * @param {?function(this:boobst.BoobstSocket, (null|Error), string)} [callback] callback
  * @return {boobst.BoobstSocket}
  */
-BoobstSocket.prototype.set = function(name, subscript, value, callback) {
+BoobstSocket.prototype.set = function(name, subscripts, value, callback) {
 	var typeOfValue = typeof value;
 	if (typeOfValue === 'function' || typeOfValue === 'undefined') {
 		callback = value;
-		value = subscript;
+		value = subscripts;
 	} else {
 		if (typeOfValue !== 'object') {
-			name = createNameFromSubscript(name, subscript);
+			name = createNameFromSubscript(name, subscripts);
 		}
 	}
 	if (typeOfValue === 'object') {
 		return BoobstSocket.prototype.saveObject.apply(this, arguments);
+	} else if (value.length > CACHE_MAX_SIZE) {
+		for (var length = value.length, i = 0, begin = 0, end = CACHE_MAX_SIZE; begin < length; i += 1, begin += CACHE_MAX_SIZE, end += CACHE_MAX_SIZE) {
+			//console.log(a.slice(b,e));
+			this.set(name, i ? subscripts.concat(i) : subscripts, value.slice(begin, end), callback);
+		}
 	} else {
 		isValidCacheVar(name);
 		this._tryCommand({
@@ -496,15 +501,15 @@ BoobstSocket.prototype.zn = function(name, callback) {
 /**
  * Удалить глобал или локал
  * @param {string} name
- * @param {Array<string>} subscript
+ * @param {Array<string>} subscripts
  * @param {function(this:boobst.BoobstSocket, (null|Error))} [callback] callback
  */
-BoobstSocket.prototype.kill = function(name, subscript, callback) {
+BoobstSocket.prototype.kill = function(name, subscripts, callback) {
 	if (typeof callback === 'undefined') {
 		isValidCacheVar(name);
-		callback = (typeof subscript === 'function' ? subscript : null);
+		callback = (typeof subscripts === 'function' ? subscripts : null);
 	} else {
-		name = createNameFromSubscript(name, subscript);
+		name = createNameFromSubscript(name, subscripts);
 	}
 	this._tryCommand({
 		cmd: BCMD.KILL,
@@ -579,19 +584,19 @@ BoobstSocket.prototype._runCommandFromQueue = function() {
 /**
  * Сохранить в каше javascript-объект
  * @param {string} name имя переменной или глобала (начинается с ^)
- * @param {Array.<string>} [subscript]
+ * @param {Array.<string>} [subscripts]
  * @param {Object} object js-объект
  * @param {function(?Error)} [callback] callback
  */
 
-BoobstSocket.prototype.saveObject = function(name, subscript, object, callback) {
+BoobstSocket.prototype.saveObject = function(name, subscripts, object, callback) {
 	if (typeof object === 'function' || typeof object === 'undefined') {
 		callback = object;
-		object = subscript;
-		subscript = [];
+		object = subscripts;
+		subscripts = [];
 	}
 	// TODO проверка на названия переменных в каше
-	this._saveObject(name, object, subscript);
+	this._saveObject(name, object, subscripts);
 	this.ping(function(err, data) {
 		if (!err && data === 'pong!') {
 			if (callback) {
@@ -633,7 +638,7 @@ BoobstSocket.prototype._saveObject = function(variable, object, stack) {
 };
 //--------------------------------------------------------------------------
 function isValidCacheVar(name) {
-	if (!VALIDCACHEVARRE.test(name)) {
+	if (!VALID_CACHE_VAR_RE.test(name)) {
 		throw new Error('"' + name + "\" isn't a valid Cache' variable name");
 	}
 }

@@ -119,6 +119,35 @@ exports['При ошибке пространство имён не должно
 	});
 };
 
+exports['Saving js-objects with set and saveObject methods'] = function(test) {
+	var startedNS;
+	var socket = new BoobstSocket({
+		host: SERVER
+		, port: PORT
+	});
+	//socket.on('debug', console.log);
+	socket.connect(function(err){
+		test.ok(!err, 'Присоединились');
+		startedNS = this.ns;
+		this.zn(NS, function(err, changed){
+			test.ok(!err, 'мы должны сменить область');
+			test.ok(changed, 'мы должны сменить область');
+			test.equal(this.ns, NS, 'мы должны сменить область');
+			this.get('^ololo', function(err){
+				test.ok(err, 'должна возникнуть ошибка');
+				this.ping(function(err){
+					test.ok(!err, 'ошибок быть не должно');
+					test.equal(this.ns, NS, 'мы должны находиться в той же самой области, в которой и были');
+					this.disconnect(function(err){
+						test.ok(!err, 'ошибок быть не должно');
+						test.done();
+					})
+				});
+			})
+		});
+	});
+};
+
 /*
 exports["Тест квазисинхронности операций"] = function(test) {
 	var cou = 100;

@@ -49,10 +49,17 @@ bs.connect(function(err){
 Set local or global variable. Local variables could be accessed throw server process.
 
 ``` Javascript
-bs.set('^var("a",1)', 'value', function(err) {
+bs.set('^var', ['a', 1], 'value', function(err) {
     if (err) { console.log(err); return; }
     console.log('done');
 });
+```
+Set can accept values more than 32kb. In this case global or local will be splitted in this structure:
+```
+global(subscript) = <first part>
+global(subscript, 1) = <second part>
+global(subscript, 2) = <third part>
+...
 ```
 
 ### Get
@@ -60,7 +67,7 @@ bs.set('^var("a",1)', 'value', function(err) {
 Get local or global variable.
 
 ``` Javascript
-bs.get('^var("a",1)', 'value', function(err, data) {
+bs.get('^var', ['a', 1], 'value', function(err, data) {
     if (err) { console.log(err); return; }
     console.log(data);
 });
@@ -71,7 +78,7 @@ bs.get('^var("a",1)', 'value', function(err, data) {
 Kill global variable.
 
 ``` Javascript
-bs.kill('^var("a",1)', function(err) {
+bs.kill('^var', ['a', 1], function(err) {
     if (err) { console.log(err); return; }
     console.log('done');
 });
