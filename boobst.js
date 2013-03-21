@@ -310,6 +310,7 @@ BoobstSocket.prototype._tryCommand = function(commandObject) { // попытат
 	if (this.command !== BCMD.NOP) {
 		this.queue.push(commandObject);
 	} else {
+		console.log(JSON.stringify(commandObject));
 		this.data = "";
 		this.command = commandObject.cmd;
 		this.callback = commandObject.callback;
@@ -471,6 +472,12 @@ BoobstSocket.prototype.set = function(name, subscript, value, callback) {
  * @param {function} [callback] callback
  */
 BoobstSocket.prototype.zn = function(name, callback) {
+	this._tryCommand({
+		cmd: BCMD.ZN,
+		name: name,
+		callback: callback
+	});
+	/*
 	if (name.toUpperCase() !== this.ns) {
 		this._tryCommand({
 			cmd: BCMD.ZN,
@@ -482,6 +489,7 @@ BoobstSocket.prototype.zn = function(name, callback) {
 			callback.call(this, null, false);
 		}
 	}
+	*/
 	return this;
 };
 
