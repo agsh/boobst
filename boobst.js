@@ -18,7 +18,7 @@ const
 	, EON = String.fromCharCode(1)
 	, VERSION = 7
 	, VALID_CACHE_VAR_RE = /^\^?%?[\-A-Z\.a-z]+[\w\d]*(\(("[A-Za-z_\-\.\+\\/0-9]+"|\d)(,("[A-Za-z_\-\.\+\\/0-9]+"|\d))*\))?$/
-	, CACHE_MAX_SIZE = 20000
+	, CACHE_MAX_SIZE = 32754
 	, BCMD = {
 		NOP: 0
 		, SET: 1
@@ -444,44 +444,44 @@ BoobstSocket.prototype.setEncoding = function(value, callback) {
  */
 BoobstSocket.prototype.set = function(name, subscripts, value, callback) {
 	var typeOfValue = typeof value;
-	if (typeOfValue === 'function' || typeOfValue === 'undefined') {
+	if (typeOfValue === 'function' || typeOfValue === 'undefined') { // missing subscripts attribute
 		callback = value;
 		value = subscripts;
-	} else {
-		if (typeOfValue !== 'object') {
-			name = createNameFromSubscript(name, subscripts);
-		}
+		subscripts = [];
 	}
-	if (typeOfValue === 'object') {
-		return BoobstSocket.prototype.saveObject.apply(this, arguments);
-	} else if (value.length > CACHE_MAX_SIZE) {
-		callback = callback || function () {};
-		var completed = 0;
-		for (var length = value.length, i = 0, begin = 0, end = CACHE_MAX_SIZE; begin < length; i += 1, begin += CACHE_MAX_SIZE, end += CACHE_MAX_SIZE) {
-			//console.log(a.slice(b,e));
-			completed += 1;
-			this.set(name, i ? subscripts.concat(i) : subscripts, value.slice(begin, end), function(err) {
-				if (err) {
-					callback(err);
-					callback = function() {};
-				} else {
-					completed -= 1;
-					if (completed === 0) {
-						callback.call(this, null);
+	if (typeOfValue === 'string' || Buffer.isBuffer(value)) {
+		if (typeOfValue === 'string' && Buffer.byteLength(value) > CACHE_MAX_SIZE || value.length > CACHE_MAX_SIZE) {
+			value = new Buffer(value);
+			callback = callback || function () {};
+			var completed = 0;
+			for (var length = value.length, i = 0, begin = 0, end = CACHE_MAX_SIZE; begin < length; i += 1, begin += CACHE_MAX_SIZE, end += CACHE_MAX_SIZE) {
+				completed += 1;
+				this.set(name, i ? subscripts.concat(i) : subscripts, value.slice(begin, end), function(err) {
+					if (err) {
+						callback(err);
+						callback = function() {};
+					} else {
+						completed -= 1;
+						if (completed === 0) {
+							callback.call(this, null);
+						}
 					}
-				}
+				});
+			}
+			return this;
+		} else {
+			name = createNameFromSubscript(name, subscripts);
+			isValidCacheVar(name);
+			this._tryCommand({
+				cmd: BCMD.SET,
+				name: name,
+				value: value,
+				callback: callback
 			});
+			return this;
 		}
-		return this;
 	} else {
-		isValidCacheVar(name);
-		this._tryCommand({
-			cmd: BCMD.SET,
-			name: name,
-			value: value,
-			callback: callback
-		});
-		return this;
+		return BoobstSocket.prototype.saveObject.apply(this, arguments);
 	}
 };
 
@@ -601,6 +601,7 @@ BoobstSocket.prototype._runCommandFromQueue = function() {
  * @param {Array.<string>} [subscripts]
  * @param {Object} object js-объект
  * @param {function(?Error)} [callback] callback
+ * @private
  */
 
 BoobstSocket.prototype.saveObject = function(name, subscripts, object, callback) {
