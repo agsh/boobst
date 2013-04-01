@@ -448,15 +448,16 @@ BoobstSocket.prototype.set = function(name, subscripts, value, callback) {
 		callback = value;
 		value = subscripts;
 		subscripts = [];
+		typeOfValue = typeof value;
 	}
 	if (typeOfValue === 'string' || Buffer.isBuffer(value)) {
 		if (typeOfValue === 'string' && Buffer.byteLength(value) > CACHE_MAX_SIZE || value.length > CACHE_MAX_SIZE) {
 			value = new Buffer(value);
 			callback = callback || function () {};
 			var completed = 0;
-			for (var length = value.length, i = 0, begin = 0, end = CACHE_MAX_SIZE; begin < length; i += 1, begin += CACHE_MAX_SIZE, end += CACHE_MAX_SIZE) {
+			for (var length = value.length, i = 0, begin = 0; begin < length; i += 1, begin += CACHE_MAX_SIZE) {
 				completed += 1;
-				this.set(name, i ? subscripts.concat(i) : subscripts, value.slice(begin, end), function(err) {
+				this.set(name, i ? subscripts.concat(i) : subscripts, value.slice(begin, begin + CACHE_MAX_SIZE), function(err) {
 					if (err) {
 						callback(err);
 						callback = function() {};
