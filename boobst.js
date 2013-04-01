@@ -358,6 +358,7 @@ BoobstSocket.prototype._tryCommand = function(commandObject) { // попытат
 				this.socket.write('Z ' + commandObject.name + EOL);
 				break;
 			case BCMD.DISCONNECT:
+				this.command = BCMD.HI; // we are ready to the next greeting from server
 				this.socket.end();
 				if (this.callback) {
 					this.callback.call(this);
@@ -396,9 +397,9 @@ BoobstSocket.prototype.execute = function(name, outStream, callback) {
 };
 
 /**
- * Получить значение
+ * Get value
  * @param {string} name Имя переменной или узла глобала
- * @param {Array<string>} subscript
+ * @param {(Array<string>|function(this:boobst.BoobstSocket, (null|Error), Object))} [subscript]
  * @param {function(this:boobst.BoobstSocket, (null|Error), Object)} callback Функция-коллбэк (error, data)
  */
 BoobstSocket.prototype.get = function(name, subscript, callback) {
@@ -516,7 +517,7 @@ BoobstSocket.prototype.zn = function(name, callback) {
 /**
  * Удалить глобал или локал
  * @param {string} name
- * @param {Array<string>} subscripts
+ * @param {Array<string> | function(this:boobst.BoobstSocket, (null|Error))} [subscripts]
  * @param {function(this:boobst.BoobstSocket, (null|Error))} [callback] callback
  */
 BoobstSocket.prototype.kill = function(name, subscripts, callback) {
