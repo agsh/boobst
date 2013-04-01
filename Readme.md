@@ -35,8 +35,8 @@ var bs = new BoobstSocket({
 bs.connect(function(err){
     var test = 'test';
     // 'this' refers to the socket itself
-    this.zn('USER').set('^test').get('^test', [1], function(err, data) {
-        assert.equal(data, test, 'should be "test"');
+    this.zn('USER').set('^test', [1, 2], test).get('^test', [1, 2], function(err, data) {
+        assert.equal(data, test, 'should be "' + test + '"');
         this.disconnect();
     });
 });
