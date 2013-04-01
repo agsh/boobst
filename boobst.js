@@ -455,10 +455,24 @@ BoobstSocket.prototype.set = function(name, subscripts, value, callback) {
 	if (typeOfValue === 'object') {
 		return BoobstSocket.prototype.saveObject.apply(this, arguments);
 	} else if (value.length > CACHE_MAX_SIZE) {
+		callback = callback || function () {};
+		var completed = 0;
 		for (var length = value.length, i = 0, begin = 0, end = CACHE_MAX_SIZE; begin < length; i += 1, begin += CACHE_MAX_SIZE, end += CACHE_MAX_SIZE) {
 			//console.log(a.slice(b,e));
-			this.set(name, i ? subscripts.concat(i) : subscripts, value.slice(begin, end), callback);
+			completed += 1;
+			this.set(name, i ? subscripts.concat(i) : subscripts, value.slice(begin, end), function(err) {
+				if (err) {
+					callback(err);
+					callback = function() {};
+				} else {
+					completed -= 1;
+					if (completed === 0) {
+						callback.call(this, null);
+					}
+				}
+			});
 		}
+		return this;
 	} else {
 		isValidCacheVar(name);
 		this._tryCommand({
