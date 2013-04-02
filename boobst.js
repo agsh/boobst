@@ -64,7 +64,7 @@ function onError(err) {
  * @this BoobstSocket
  */
 function onClose() {
-	if (!this.killme) { // если мы не вызывали функцию disconnect
+	if (!this.killme) { // if we got connection troubles
 		if (this.out) {
 			this.out.end();
 		}
@@ -76,7 +76,7 @@ function onClose() {
 			}
 		}
 		this.command = BCMD.HI;
-		// восстанавливаем соединение по увеличивающимся таймаутам
+		// trying to establish connection at growing time intervals
 		if (!this.connectionTimeout) {
 			this.connectionTimeout = 0;
 		} else {
@@ -87,6 +87,10 @@ function onClose() {
 			this.connect();
 		}.bind(this), this.connectionTimeout);
 		//self.connect();
+	} else { // if we calls .disconnect() method
+		if (this.callback) {
+			this.callback.call(this); // disconnection callback
+		}
 	}
 }
 
@@ -360,9 +364,11 @@ BoobstSocket.prototype._tryCommand = function(commandObject) { // попытат
 			case BCMD.DISCONNECT:
 				this.command = BCMD.HI; // we are ready to the next greeting from server
 				this.socket.end();
+				/*
 				if (this.callback) {
 					this.callback.call(this);
 				}
+				*/
 				break;
 			default:
 				this.error("unknown command");

@@ -1,9 +1,12 @@
 {
 	"name": "boobst",
-	"version": "0.7.7",
+	"version": "0.7.8",
 	"author": "Andrew D.Laptev <a.d.laptev@gmail.com>",
 	"description": "Simple Node.js Caché driver",
 	"main": "./boobst",
+	"scripts": {
+		"test": "mocha"
+	},
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/agsh/boobst.git"
@@ -17,5 +20,8 @@
 	"license": "AGPL",
 	"engines": {
 		"node": ">=0.6"
+	},
+	"devDependencies": {
+		"mocha": "*"
 	}
 }
