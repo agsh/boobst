@@ -51,7 +51,12 @@ function onConnection() {
 function onError(err) {
 	this.emit('debug', 'error: ' + err.toString());
 	if (this.callback) {
-		this.callback(err);
+
+		if (this.command === BCMD.BLOB) {  // blob errors we catch here   TODO: think about properly closing MUMPS connection
+			this.command = BCMD.NOP;
+		}
+
+		this.callback.call(this, err);
 	}
 	// self.socket = null; pass this if we don't want to connect anymore
 }
@@ -66,11 +71,14 @@ function onClose(transmittionErr) {
 		if (this.out) {
 			this.out.end();
 		}
+		if (this.command === BCMD.BLOB && this.callback) { // if we disconnected under .blob command
+			this.callback.call(this, null);
+		}
 		this.emit('debug', 'disconnected');
 		if (this.data) {
 			this.emit('debug', this.data.toString());
 			if (this.callback) {
-				this.callback(new Error(this.data));
+				this.callback.call(this, new Error(this.data));
 			}
 		}
 		this.command = BCMD.HI;
@@ -108,6 +116,9 @@ function onData(data) {
 			break;
 		case BCMD.ZN:
 			this.onDataZn(data);
+			break;
+		case BCMD.BLOB:
+			// do nothing, this error should be caught by onError event
 			break;
 		case BCMD.HI:
 			this.onDataGreeting(data);
@@ -316,7 +327,7 @@ BoobstSocket.prototype._tryCommand = function(commandObject) { // попытат
 		this.data = "";
 		this.command = commandObject.cmd;
 		this.callback = commandObject.callback;
-		this.emit('debug', 'cmd > ' + JSON.stringify(commandObject));
+		this.emit('debug', 'cmd > ' + commandObject.cmd + ', ' + (commandObject.name || commandObject.uri));
 		switch (commandObject.cmd) {
 			case BCMD.EXECUTE:
 				if (commandObject.out) {
@@ -349,10 +360,12 @@ BoobstSocket.prototype._tryCommand = function(commandObject) { // попытат
 				this.socket.write('B ' + commandObject.uri + EOL);
 				commandObject.stream.on('end', function(){
 					this.socket.end();
+					/*
 					if (this.callback) { // если у нас есть коллбек
 						this.callback.call(this, null);
 					}
-					this.command = BCMD.NOP;
+					*/
+					//this.command = BCMD.NOP;
 					//this.connect();
 				}.bind(this));
 				commandObject.stream.pipe(this.socket);
