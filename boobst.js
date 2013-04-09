@@ -7,8 +7,6 @@
  * @license AGPL
  **/
 
-/*global exports, process, require */
-
 var net = require('net')
 	, util = require('util')
 	, events = require('events');
@@ -55,15 +53,15 @@ function onError(err) {
 	if (this.callback) {
 		this.callback(err);
 	}
-	// self.socket = null; вернуть, если нужно больше не подключаться
+	// self.socket = null; pass this if we don't want to connect anymore
 }
 
 /**
- * Событие сокета на закрытие соединения
+ * On close socket event
  * @private
  * @this BoobstSocket
  */
-function onClose() {
+function onClose(transmittionErr) {
 	if (!this.killme) { // if we got connection troubles
 		if (this.out) {
 			this.out.end();
@@ -318,6 +316,7 @@ BoobstSocket.prototype._tryCommand = function(commandObject) { // попытат
 		this.data = "";
 		this.command = commandObject.cmd;
 		this.callback = commandObject.callback;
+		this.emit('debug', 'cmd > ' + JSON.stringify(commandObject));
 		switch (commandObject.cmd) {
 			case BCMD.EXECUTE:
 				if (commandObject.out) {
@@ -354,7 +353,7 @@ BoobstSocket.prototype._tryCommand = function(commandObject) { // попытат
 						this.callback.call(this, null);
 					}
 					this.command = BCMD.NOP;
-					this.connect();
+					//this.connect();
 				}.bind(this));
 				commandObject.stream.pipe(this.socket);
 				break;
