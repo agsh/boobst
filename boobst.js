@@ -67,6 +67,7 @@ function onError(err) {
  * @this BoobstSocket
  */
 function onClose(transmittionErr) {
+	this.connected = false;
 	if (!this.killme) { // if we got connection troubles
 		if (this.out) {
 			this.out.end();
@@ -171,6 +172,7 @@ var BoobstSocket = function(options) {
 		this.ns = options.ns;
 	}
 	this.command = BCMD.HI;
+	this.connected = false;
 	/**
 	 * Сокет соединения
 	 * @type {net.Socket}
@@ -254,6 +256,7 @@ BoobstSocket.prototype.onDataCommon = function(data) {
  */
 BoobstSocket.prototype.onDataGreeting = function(data){
 	this.emit('debug', 'connected');
+	this.connected = true;
 	var dataStr = data.toString().split(';');
 
 	if (parseInt(dataStr[0], 10) !== this.version) {
@@ -321,7 +324,7 @@ BoobstSocket.prototype.onDataZn = function(data) {
  * @private
  */
 BoobstSocket.prototype._tryCommand = function(commandObject) { // попытаться выполнить комманду
-	if (this.command !== BCMD.NOP) {
+	if (this.command !== BCMD.NOP || this.connected === false) {
 		this.queue.push(commandObject);
 	} else {
 		this.data = "";
@@ -368,7 +371,9 @@ BoobstSocket.prototype._tryCommand = function(commandObject) { // попытат
 					//this.command = BCMD.NOP;
 					//this.connect();
 				}.bind(this));
+				commandObject.stream.pipe(process.stdout);
 				commandObject.stream.pipe(this.socket);
+				commandObject.stream.resume();
 				break;
 			case BCMD.ZN:
 				this.socket.write('Z ' + commandObject.name + EOL);
@@ -469,6 +474,10 @@ BoobstSocket.prototype.set = function(name, subscripts, value, callback) {
 		subscripts = [];
 		typeOfValue = typeof value;
 	}
+	if (typeOfValue === 'number') {
+		value = value.toString();
+		typeOfValue = 'string';
+	}
 	if (typeOfValue === 'string' || Buffer.isBuffer(value)) {
 		if (typeOfValue === 'string' && Buffer.byteLength(value) > CACHE_MAX_SIZE || value.length > CACHE_MAX_SIZE) {
 			value = new Buffer(value);
@@ -500,8 +509,11 @@ BoobstSocket.prototype.set = function(name, subscripts, value, callback) {
 			});
 			return this;
 		}
-	} else {
+	} else if (typeOfValue === 'object') {
 		return BoobstSocket.prototype.saveObject.apply(this, arguments);
+	} else {
+		callback(new Error('Method `set` can accept only `string`, `object`, `Buffer`, `number` value types.'));
+		return this;
 	}
 };
 
