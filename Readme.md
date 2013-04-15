@@ -24,7 +24,7 @@ npm install boobst
 ## Sample program
 
 ``` Javascript
-var BoobstSocket = require('./boobst').BoobstSocket
+var BoobstSocket = require('boobst').BoobstSocket
     , assert = require('assert')
     ;
 
@@ -46,7 +46,7 @@ bs.connect(function(err){
 
 ### Set
 
-Set local or global variable. Local variables could be accessed throw server process.
+Set local or global variable. Type of value should be string, number, buffer or object. Local variables could be accessed throw server process.
 
 ``` Javascript
 bs.set('^var', ['a', 1], 'value', function(err) {
@@ -128,7 +128,7 @@ bs.set('a', ['abc', 1], 5);
 
 ### SaveObject
 
-Save JSON objects in database. Mapping JSON to globals is similar to document storage in this paper: http://www.mgateway.com/docs/universalNoSQL.pdf pp. 19-21
+Save JSON objects in database. Set with object value type implements same behaviour. Mapping JSON to globals is similar to document storage in this paper: http://www.mgateway.com/docs/universalNoSQL.pdf pp. 19-21
 ``` JSON
 {
     "array": ["a", "ab", "abc"],
