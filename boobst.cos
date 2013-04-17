@@ -118,20 +118,17 @@ loop2
 	g loop2
 	;
 blob(name)
-	s ^%test("blob") = "wer"
 	set type = $p(name,"://",1)
 	set where = $p(name,"://",2)
 	use $io:(/IOTABLE="RAW"::"-TS"::32000)	
 	i type="file" d
 	.	set IO=$IO
-	.	s ^%test("blob") = "wer"
-	.	open where:("WNS"):5
-	.	s ^%test("blob") = $TEST
+	.	open where:("WNS"):1
 	.	if $TEST=0 do
 	.	.	close where
-	.	.	u io
-	.	.	u $io:(/IOTABLE="UTF8"::"-Q+W":$c(0))
-	.	.	w "couldn't open device"
+	.	.	use io
+	.	.	use $io:(/IOTABLE="UTF8"::"-Q+W":$c(0))
+	.	.	write "couldn't open device"
 	.	.	g quit
 	else  i type="global" do
 	.	set it = 0
