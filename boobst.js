@@ -685,9 +685,11 @@ BoobstSocket.prototype._saveObject = function(variable, object, stack) {
 };
 //--------------------------------------------------------------------------
 function isValidCacheVar(name) {
+	/* TODO fix it
 	if (!VALID_CACHE_VAR_RE.test(name)) {
 		throw new Error('"' + name + "\" isn't a valid Cache' variable name");
 	}
+	*/
 }
 
 function createNameFromSubscript(name, subscript) {
