@@ -13,7 +13,7 @@ const GLOBAL = '^%test';
 
 describe('set', function() {
 	var bs = new BoobstSocket({
-		host: '91.213.104.28'
+		host: 'localhost'
 		, ns: 'ASU'
 	});
 	//bs.on('debug', console.log);
