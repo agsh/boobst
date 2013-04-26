@@ -168,6 +168,8 @@ bs.saveObject('^test', ['sub1', 'sub2'], obj, function(err) {
 ### Blob
 
 Send stream to the database server. file://path/to/the/file saves file on the disk, global://blob saves file into global.
+> Note: if you are using node.js v0.8 or later with old Streams API, it is better to pause you stream after creating.
+> There is no such problem in node.js v0.10 with "Streams2" API.
 
 ``` Javascript
 bs.blob('global://blob', fs.createReadStream('/home/und/00109721.jpg'), function(err) {
