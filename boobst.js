@@ -371,9 +371,8 @@ BoobstSocket.prototype._tryCommand = function(commandObject) { // попытат
 					//this.command = BCMD.NOP;
 					//this.connect();
 				}.bind(this));
-				//commandObject.stream.pipe(process.stdout);
 				commandObject.stream.pipe(this.socket);
-				var version = process.versions.split('.').map(function(num) {
+				var version = process.versions.node.split('.').map(function(num) {
 					return parseInt(num);
 				});
 				if (version[0] === 0 && version[1] < 9) { // fix for old Streams 1 api
