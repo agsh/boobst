@@ -371,9 +371,14 @@ BoobstSocket.prototype._tryCommand = function(commandObject) { // попытат
 					//this.command = BCMD.NOP;
 					//this.connect();
 				}.bind(this));
-				commandObject.stream.pipe(process.stdout);
+				//commandObject.stream.pipe(process.stdout);
 				commandObject.stream.pipe(this.socket);
-				commandObject.stream.resume();
+				var version = process.versions.split('.').map(function(num) {
+					return parseInt(num);
+				});
+				if (version[0] === 0 && version[1] < 9) { // fix for old Streams 1 api
+					commandObject.stream.resume();
+				}
 				break;
 			case BCMD.ZN:
 				this.socket.write('Z ' + commandObject.name + EOL);
@@ -381,11 +386,6 @@ BoobstSocket.prototype._tryCommand = function(commandObject) { // попытат
 			case BCMD.DISCONNECT:
 				this.command = BCMD.HI; // we are ready to the next greeting from server
 				this.socket.end();
-				/*
-				if (this.callback) {
-					this.callback.call(this);
-				}
-				*/
 				break;
 			default:
 				this.error("unknown command");
