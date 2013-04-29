@@ -511,7 +511,12 @@ BoobstSocket.prototype.set = function(name, subscripts, value, callback) {
 	} else if (typeOfValue === 'object') {
 		return BoobstSocket.prototype.saveObject.apply(this, arguments);
 	} else {
-		callback(new Error('Method `set` can accept only `string`, `object`, `Buffer`, `number` value types.'));
+		var err = new Error('Method `set` can accept only `string`, `object`, `Buffer`, `number` value types. Not: ' + value);
+		if (callback) {
+			callback(err);
+		} else {
+			throw err;
+		}
 		return this;
 	}
 };
