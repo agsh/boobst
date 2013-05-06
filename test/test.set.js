@@ -9,12 +9,13 @@ var assert = require('assert')
 	, BoobstSocket = boobst.BoobstSocket
 	;
 
-const GLOBAL = '^%test';
+const GLOBAL = '^test';
 
 describe('set', function() {
 	var bs = new BoobstSocket({
-		host: 'localhost'
-		, ns: 'ASU'
+		host: '94.159.10.26'
+		, port: 8880
+		, ns: 'TEST'
 	});
 	//bs.on('debug', console.log);
 
