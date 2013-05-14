@@ -1,6 +1,6 @@
 {
 	"name": "boobst",
-	"version": "0.7.15",
+	"version": "0.7.16",
 	"author": "Andrew D.Laptev <a.d.laptev@gmail.com>",
 	"description": "Simple Node.js Caché driver",
 	"main": "./boobst",
@@ -17,7 +17,7 @@
 		"cache'",
 		"driver"
 	],
-	"license": "AGPL",
+	"license": "MIT",
 	"engines": {
 		"node": ">=0.6"
 	},
