@@ -43,6 +43,10 @@ bs.connect(function(err){
 });
 ```
 
+## Tests
+Tests uses Mocha test framework. You can install it by typing `npm install mocha`
+You should specify configuration of Cache' Boobst server at ./test/test.config.js and then run tests this way: `npm test`
+
 ## Commands
 
 ### Set
@@ -68,9 +72,20 @@ global(subscript, 2) = <third part>
 Get local or global variable.
 
 ``` Javascript
-bs.get('^var', ['a', 1], 'value', function(err, data) {
+bs.get('^var', ['a', 1], function(err, data) {
     if (err) { console.log(err); return; }
     console.log(data);
+});
+```
+
+### Order (Next)
+
+Gets the next key based on current key.
+
+``` Javascript
+bs.next('^var', ['a', 1], function(err, key) {
+    assert.equal(err, null);
+    assert.equal(key, 2);
 });
 ```
 

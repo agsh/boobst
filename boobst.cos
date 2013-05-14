@@ -1,6 +1,13 @@
-boobst
-	; http://localhost:57772/csp/docbook/DocBook.UI.Page.cls?KEY=GIOD_tcp
-	q
+boobst ;дриайвер связи с node.js
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ ;                                            
+ ; m.jsPortal for CIToRUS project             
+ ; CIToRUS v.1.1017 от 19.02.2013 Copyright (C) 2013 AST Company.
+ ;                                            
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ 
+ ; http://localhost:57772/csp/docbook/DocBook.UI.Page.cls?KEY=GIOD_tcp
+ q
 starter(msg)
  s lv="boobstServer"_$$port()
  l +@(lv):0 e  s msg="already running" w msg QUIT
@@ -8,7 +15,7 @@ starter(msg)
  j start($$port())
  q	
 port() 
-	q 6666
+	q 8888
 	;
 version()
 	q 7
@@ -88,9 +95,6 @@ loop
 	s %CGIEVAR("SERVER_PROTOCOL")="HTTP/1.1"
 	s %CGIEVAR("SERVER_SOFTWARE")="Node.js"
 	s %KEY("MGWLIB")="/cgi-bin/nph-mgwcgi.exe"
-	d var^bscito
-	d VAR^bsg
-	do MAINVAR^bsg
 loop2 
 	r *c
 	r input s input=$c(c)_input
@@ -102,6 +106,7 @@ loop2
 	i $e(input,1,2)="Q " d setKey($e(input,3,$l(input))) g loop2
 	i $e(input,1,2)="K " d kill($e(input,3,$l(input))) g loop2
 	i $e(input,1,2)="G " d get($e(input,3,$l(input))) g loop2
+	i $e(input,1,2)="O " d order($e(input,3,$l(input))) g loop2
 	i $e(input,1,2)="Z " d zn($e(input,3,$l(input))) g loop
 	i $e(input,1,2)="B " d blob($e(input,3,$l(input))) g loopBlob
 	i $e(input,1,2)="E " d exec($e(input,3,$l(input))) g loop
@@ -118,17 +123,20 @@ loop2
 	g loop2
 	;
 blob(name)
+	;s ^%test("blob") = "wer"
 	set type = $p(name,"://",1)
 	set where = $p(name,"://",2)
 	use $io:(/IOTABLE="RAW"::"-TS"::32000)	
 	i type="file" d
 	.	set IO=$IO
-	.	open where:("WNS"):1
+	.	;s ^%test("blob") = "wer"
+	.	open where:("WNS"):5
+	.	;s ^%test("blob") = $TEST
 	.	if $TEST=0 do
 	.	.	close where
-	.	.	use io
-	.	.	use $io:(/IOTABLE="UTF8"::"-Q+W":$c(0))
-	.	.	write "couldn't open device"
+	.	.	u io
+	.	.	u $io:(/IOTABLE="UTF8"::"-Q+W":$c(0))
+	.	.	w "couldn't open device"
 	.	.	g quit
 	else  i type="global" do
 	.	set it = 0
@@ -191,16 +199,19 @@ get(%nameOfRoutine)
 	d end
 	quit
 	;
+order(%nameOfRoutine)
+	write $order(@%nameOfRoutine)
+	d end
+	quit
+	;
 zn(name)
-	zn name
-	d var^bscito
+	;zn name
 	w "ok.zn."_$zu(5)
 	write *-3
 	quit
 	;	
 exec(%nameOfRoutine)
 	;s ^%tmp($i(^%tmp)) = $zu(5)_" : "_%nameOfRoutine
-	d var^bscito
 	do @%nameOfRoutine
 	do end
 	kill

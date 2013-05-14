@@ -3,7 +3,7 @@
  * Маленький клиент для работы с СУБД Cache'
  * Для отладки используйте метод .emit('debug')
  * @author Andrew D. Laptev <a.d.laptev@gmail.com>
- * @version 0.7.2
+ * @version 0.7.15
  * @license AGPL
  **/
 
@@ -31,6 +31,7 @@ const
 		, ZN: 10
 		, HI: 11
 		, BLOB: 12
+		, ORDER: 13
 	}
 	;
 
@@ -112,7 +113,7 @@ function onData(data) {
 		case BCMD.NOP:
 			this.emit('debug', 'Data on NOP command: ' + data.toString());
 			break;
-		case BCMD.SETENCODING: case BCMD.KEY: case BCMD.SET: case BCMD.KILL: case BCMD.EXECUTE: case BCMD.FLUSH: case BCMD.PING: case BCMD.GET:
+		case BCMD.SETENCODING: case BCMD.KEY: case BCMD.SET: case BCMD.KILL: case BCMD.EXECUTE: case BCMD.FLUSH: case BCMD.PING: case BCMD.GET: case BCMD.ORDER:
 			this.onDataCommon(data);
 			break;
 		case BCMD.ZN:
@@ -359,6 +360,9 @@ BoobstSocket.prototype._tryCommand = function(commandObject) { // попытат
 			case BCMD.PING:
 				this.socket.write('P' + EOL);
 				break;
+			case BCMD.ORDER:
+				this.socket.write('O '  + commandObject.name +  EOL);
+				break;
 			case BCMD.BLOB:
 				this.socket.write('B ' + commandObject.uri + EOL);
 				commandObject.stream.on('end', function(){
@@ -522,6 +526,22 @@ BoobstSocket.prototype.set = function(name, subscripts, value, callback) {
 };
 
 /**
+ *
+ * @param name
+ * @param subscript
+ * @param {Function} callback
+ */
+BoobstSocket.prototype.order = BoobstSocket.prototype.next = function(name, subscript, callback) {
+	name = createNameFromSubscript(name, subscript);
+	this._tryCommand({
+		cmd: BCMD.ORDER,
+		name: name,
+		callback: callback
+	});
+	return this;
+};
+
+/**
  * Сменить пространство имён БД
  * @param {string} name Существующий namespace
  * @param {function} [callback] callback
@@ -682,6 +702,7 @@ BoobstSocket.prototype._saveObject = function(variable, object, stack) {
 				} else {
 					object[key] = '0false';
 				}
+				// this fall-through is right
 			default:
 				self.set(variable + '("' + stack.join('","') + (stack.length > 0 ? '","' : "") + key.replace(/"/g, '""') + '")', object[key]);
 		}
