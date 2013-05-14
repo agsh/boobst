@@ -12,11 +12,7 @@ var assert = require('assert')
 const GLOBAL = '^test';
 
 describe('set', function() {
-	var bs = new BoobstSocket({
-		host: '94.159.10.26'
-		, port: 8880
-		, ns: 'TEST'
-	});
+	var bs = new BoobstSocket(require('./test.config'));
 	//bs.on('debug', console.log);
 
 	beforeEach(function(done) {
