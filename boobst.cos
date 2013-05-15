@@ -232,3 +232,41 @@ end
 	write $c(6)_$c(6)
 	write *-3
 	quit
+gl(global)
+	n key, inKey, level, isArray, notFirst
+	s key = ""
+	s isArray = $$numberTest(global)
+	s notFirst = 0
+	if isArray  w "["
+	else  w "{"
+	f  s key = $order(@$na(@global@(key)))  q:key=""  d
+	.	;w !,key,") ",$na(@global@(key)),$d(@$na(@global@(key)))
+	.	if notFirst w ","
+	.	else  s notFirst = 1
+	.	set inKey = $na(@global@(key)), level = $d(@inKey)
+	.	if level = 10  do
+	.	.	w """"_key_""":"
+	.	.	do gl(inKey)
+	.	else  if level = 11 do
+	.	.	do create32kb(inKey)
+	.	else  do
+	.	.	if isArray  w $$makeValue(@global@(key))
+	.	.	else  w """"_key_""":"_$$makeValue(@global@(key))
+	if isArray  w "]"
+	else  w "}"
+	quit
+numberTest(global)
+	n key, is
+	s key = "", is = 1
+	f  s key = $order(@$na(@global@(key))) q:key=""  d
+	.	if key'=+key set is = 0 quit
+	quit is
+	
+create32kb(global)	
+	write "large portion of information"
+	quit
+makeValue(val)
+	if val = +val quit val
+	if val = "1true" quit "true"
+	if val = "0false" quit "false"
+	quit """"_val_""""
