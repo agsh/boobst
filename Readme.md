@@ -7,7 +7,7 @@ Server part was inspired by [M.Wire](https://github.com/robtweed/mdb) project. I
 
 Main goal of this project is to replace Apache + Weblink connection with Node.js server.
 
-Licensed under the The GNU Affero General Public License which can be found at www.gnu.org/licenses/
+Licensed under the The MIT License which can be found at http://opensource.org/licenses/MIT
 
 ##Installation
 
