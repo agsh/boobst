@@ -51,7 +51,7 @@ You should specify configuration of Cache' Boobst server at ./test/test.config.j
 
 ### Set
 
-Set local or global variable. Type of value should be string, number, buffer or object. Local variables could be accessed throw server process.
+Set local or global variable. Type of value should be a string, number, buffer or object. Local variables could be accessed throw server process.
 
 ``` Javascript
 bs.set('^var', ['a', 1], 'value', function(err) {
