@@ -270,7 +270,6 @@ create32kb(global)
     f  s key = $order(@$na(@global@(key))) q:key=""  d
     .	w @$na(@global@(key))
     w """"
-    quit
 	quit
 makeValue(val)
 	if val = +val quit val
