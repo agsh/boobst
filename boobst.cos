@@ -248,6 +248,7 @@ gl(global)
 	.	.	w """"_key_""":"
 	.	.	do gl(inKey)
 	.	else  if level = 11 do
+	.	.	w """"_key_""":"
 	.	.	do create32kb(inKey)
 	.	else  do
 	.	.	if isArray  w $$makeValue(@global@(key))
@@ -263,7 +264,12 @@ numberTest(global)
 	quit is
 	
 create32kb(global)	
-	write "large portion of information"
+	n key
+	s key = ""
+	w """"_@$na(@global)
+	f  s key = $order(@$na(@global@(key))) q:key=""  d
+	.	w @$na(@global@(key))
+	w """"
 	quit
 makeValue(val)
 	if val = +val quit val
