@@ -3,7 +3,7 @@
  */
 
 module.exports = {
-	host: '10.30.2.4',
-	port: 6667,
-	ns: 'TEST'
+	host: '91.239.143.154',
+	port: 6666,
+	ns: 'USER'
 };
