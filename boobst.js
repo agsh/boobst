@@ -331,7 +331,10 @@ BoobstSocket.prototype._tryCommand = function(commandObject) { // попытат
 		this.data = "";
 		this.command = commandObject.cmd;
 		this.callback = commandObject.callback;
-		this.emit('debug', 'cmd > ' + commandObject.cmd + ', ' + (commandObject.name || commandObject.uri));
+		this.emit('debug', 'command: ' + commandObject.cmd +
+			(commandObject.name || commandObject.uri ? ', name: ' + (commandObject.name || commandObject.uri) : '') +
+			(commandObject.value ? ', value:' +commandObject.value : '')
+		);
 		switch (commandObject.cmd) {
 			case BCMD.EXECUTE:
 				if (commandObject.out) {
