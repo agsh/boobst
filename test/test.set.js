@@ -13,7 +13,7 @@ const GLOBAL = '^test';
 
 describe('set', function() {
 	var bs = new BoobstSocket(require('./test.config'));
-	//bs.on('debug', console.log);
+	bs.on('debug', console.log);
 
 	beforeEach(function(done) {
 		bs.connect(function(err) {
@@ -57,10 +57,10 @@ describe('set', function() {
 		});
 	});
 
-	describe('#global without subscripts inline', function() {
+	describe('#global with subscripts inline', function() {
 		it('should set a local and then get it', function(done) {
 			var value = 'VALUE';
-			bs.set(GLOBAL, value).get(GLOBAL, function(err, data) {
+			bs.set(GLOBAL, ['a', 1], value).get(GLOBAL, ['a', 1], function(err, data) {
 				assert.equal(err, null);
 				assert.equal(value, data);
 				done();
@@ -68,12 +68,12 @@ describe('set', function() {
 		});
 	});
 
-	describe('#global without subscripts callbacks', function() {
+	describe('#global with subscripts callbacks', function() {
 		it('should set a local and then get it', function(done) {
 			var value = 'VALUE';
-			bs.set(GLOBAL, value, function(err) {
+			bs.set(GLOBAL, ['a', 1], value, function(err) {
 				assert.equal(err, null);
-				bs.get(GLOBAL, function(err, data) {
+				bs.get(GLOBAL, ['a', 1], function(err, data) {
 					assert.equal(err, null);
 					assert.equal(value, data);
 					done();
@@ -82,19 +82,6 @@ describe('set', function() {
 		});
 	});
 
-	describe('#global without subscripts callbacks', function() {
-		it('should set a local and then get it', function(done) {
-			var value = 'VALUE';
-			bs.set(GLOBAL, value, function(err) {
-				assert.equal(err, null);
-				bs.get(GLOBAL, function(err, data) {
-					assert.equal(err, null);
-					assert.equal(value, data);
-					done();
-				});
-			})
-		});
-	});
 	/*
 	describe('#global set value greater than 32754 bytes', function() {
 		it('should set a local and then get it', function(done) {
