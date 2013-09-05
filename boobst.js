@@ -474,7 +474,7 @@ BoobstSocket.prototype.setEncoding = function(value, callback) {
  */
 BoobstSocket.prototype.set = function(name, subscripts, value, callback) {
 	var typeOfValue = typeof value;
-	if (typeOfValue === 'function' || typeOfValue === 'undefined') { // missing subscripts attribute
+	if (typeOfValue === 'function' || (typeOfValue === 'undefined' && !Array.isArray(subscripts))) { // missing subscripts attribute
 		callback = value;
 		value = subscripts;
 		subscripts = [];
