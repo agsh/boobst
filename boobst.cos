@@ -1,56 +1,46 @@
-boobst ;дриайвер связи с node.js
- ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
- ;                                            
- ; m.jsPortal for CIToRUS project             
- ; CIToRUS v.1.1017 от 19.02.2013 Copyright (C) 2013 AST Company.
- ;                                            
- ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
- 
- ; http://localhost:57772/csp/docbook/DocBook.UI.Page.cls?KEY=GIOD_tcp
- q
+; Socket documentation
+; http://localhost:57772/csp/docbook/DocBook.UI.Page.cls?KEY=GIOD_tcp
 starter(msg)
- s lv="boobstServer"_$$port()
- l +@(lv):0 e  s msg="already running" w msg QUIT
- l -@(lv) s msg="start on "_$$port()
- j start($$port())
- q	
+	set lv="boobstServer"_$$port()
+	lock +@(lv):0 e  set msg="already running" write msg quit
+	lock -@(lv) set msg="started on "_$$port()
+	job start($$port())
+	quit
 port() 
-	q 8888
+	quit 6666
 	;
 version()
-	q 7
+	quit 7
 start(Port)
-	n io,port,x,lv
-
-	s port=$g(Port,$$port())
-	s lv="boobstServer"_port
-	l +@(lv):0 e  w "already running" QUIT  ; already running
+	new io, port, lv
+	set port=$g(Port,$$port())
+	set lv="boobstServer"_port
+	lock +@(lv):0 e  w "already running" QUIT  ; already running
+	set io="|TCP|1"
+	; "PTAS" ?
+	open io:(/TRA=0:port:"CPAS":/NODELAY=0):20 e  w "Port "_port_" already served" QUIT
+	write "Boobst Server v.0."_$$version()_" started on Port:"_port,!
+	use io
 	;
-	s io="|TCP|1" 
-
-	;o io:(/TRA=0:port:"PTAS":/NODELAY=0):20 e  w "port served" QUIT
-	o io:(/TRA=0:port:"CPAS":/NODELAY=0):20 e  w "port served" QUIT
-	w "Boobst Server v.0."_$$version()_" started on Port:"_port,!
-	u io
 serverLoop
-	r x
-	j child:(:5:io:io)
-	g serverLoop
+	read x
+	job child:(:5:io:io)
+	goto serverLoop
 	;
 child
 	;
-	u $io:(/IOTABLE="UTF8"::"-Q+W":$c(0))
-	d command
-	QUIT
+	use $io:(/IOTABLE="UTF8"::"-Q+W":$c(0))
+	do command
+	quit
 	;
 
 cleardown
 	;
-	n ignore,pid
+	new ignore, pid
 	;
-	s pid=""
+	set pid=""
 	f  s pid=$o(^boobst("connected",pid)) q:pid=""  d
-	. i pid=$j q
+	. if pid=$j quit
 	. s ignore=1
 	. l +^boobst("connected",pid):0 e  s ignore=0
 	. i ignore d
@@ -69,76 +59,73 @@ cleardown
 	QUIT 
  
 command ;
-	n authNeeded,c,crlf,input,output
+	new authNeeded, c, crlf, input, output
 	;
 	;d cleardown
-	s ^boobst("connected",$j)=""
-	l +^boobst("connected",$j)
-	w $$version()_";"_$j_";"_$zu(5)
+	set ^boobst("connected",$j)=""
+	lock +^boobst("connected",$j)
+	write $$version()_";"_$j_";"_$zu(5)
 	write *-3
 loop
-	s crlf=$c(13,10)
-	;s %CGIEVAR("AUTH_PASSWORD")=""
-	;s %CGIEVAR("AUTH_TYPE")=""
-	s %CGIEVAR("CONTENT_TYPE")=""
-	s %CGIEVAR("GATEWAY_INTERFACE")="CGI/1.1"
-	s %CGIEVAR("HTTP_AUTHORIZATION")=""
-	s %CGIEVAR("HTTP_COOKIE")=""
-	s %CGIEVAR("HTTP_REFERER")=""
-	;s %CGIEVAR("HTTP_SOAPACTION")=""
-	s %CGIEVAR("PATH_TRANSLATED")="C:/proj/js/cgi-bin/nph-mgwcgi.exe"
-	s %CGIEVAR("REMOTE_HOST")=""
-	s %CGIEVAR("REMOTE_IDENT")=""
-	s %CGIEVAR("REMOTE_USER")=""
-	s %CGIEVAR("REQUEST_METHOD")="GET"
-	s %CGIEVAR("SERVER_PORT")=80
-	s %CGIEVAR("SERVER_PROTOCOL")="HTTP/1.1"
-	s %CGIEVAR("SERVER_SOFTWARE")="Node.js"
-	s %KEY("MGWLIB")="/cgi-bin/nph-mgwcgi.exe"
+	set crlf=$c(13,10)
+	;set %CGIEVAR("AUTH_PASSWORD")=""
+	;set %CGIEVAR("AUTH_TYPE")=""
+	set %CGIEVAR("CONTENT_TYPE")=""
+	set %CGIEVAR("GATEWAY_INTERFACE")="CGI/1.1"
+	set %CGIEVAR("HTTP_AUTHORIZATION")=""
+	set %CGIEVAR("HTTP_COOKIE")=""
+	set %CGIEVAR("HTTP_REFERER")=""
+	;set %CGIEVAR("HTTP_SOAPACTION")=""
+	set %CGIEVAR("PATH_TRANSLATED")="C:/proj/js/cgi-bin/nph-mgwcgi.exe"
+	set %CGIEVAR("REMOTE_HOST")=""
+	set %CGIEVAR("REMOTE_IDENT")=""
+	set %CGIEVAR("REMOTE_USER")=""
+	set %CGIEVAR("REQUEST_METHOD")="GET"
+	set %CGIEVAR("SERVER_PORT")=80
+	set %CGIEVAR("SERVER_PROTOCOL")="HTTP/1.1"
+	set %CGIEVAR("SERVER_SOFTWARE")="Node.js"
+	set %KEY("MGWLIB")="/cgi-bin/nph-mgwcgi.exe"
 loop2 
-	r *c
-	r input s input=$c(c)_input
-	s input=$e(input,1,$l(input)-1)
-	;s ^%boobst("cmd",$i(^%boobst("cmd"))) = input
-	i input="PING" s output="+PONG"_crlf w output g loop2
-	i input="" g loop
-	i $e(input,1,2)="S " d set($e(input,3,$l(input))) g loop2
-	i $e(input,1,2)="Q " d setKey($e(input,3,$l(input))) g loop2
-	i $e(input,1,2)="K " d kill($e(input,3,$l(input))) g loop2
-	i $e(input,1,2)="G " d get($e(input,3,$l(input))) g loop2
-	i $e(input,1,2)="O " d order($e(input,3,$l(input))) g loop2
-	i $e(input,1,2)="Z " d zn($e(input,3,$l(input))) g loop
-	i $e(input,1,2)="B " d blob($e(input,3,$l(input))) g loopBlob
-	i $e(input,1,2)="E " d exec($e(input,3,$l(input))) g loop
-	i input="F" d flush g loop
-	i input="P" d ping g loop2
-	i $e(input,1,2)="8 " d setEncoding($e(input,3,$l(input))) g loop2
-	;i input="UTF8" u $io:(/IOTABLE="UTF8"::"-Q+W":$c(0)) g loop
-	;i input="RAW" u $io:(/IOTABLE="RAW"::"-Q+W":$c(0)) g loop
-	i input="EXIT" g halt
-	i input="QUIT" g quit
-	i input="HALT" g halt
-	s output="-"_input_"- not recognized"_crlf w output
-	d end
-	g loop2
+	read *c
+	read input set input=$c(c)_input
+	set input=$e(input,1,$l(input)-1)
+	;set ^%boobst("cmd",$i(^%boobst("cmd"))) = input
+	if input="PING" s output="+PONG"_crlf w output g loop2
+	if input="" g loop
+	if $e(input,1,2)="S " do set($e(input,3,$l(input))) goto loop2
+	if $e(input,1,2)="Q " do setKey($e(input,3,$l(input))) goto loop2
+	if $e(input,1,2)="K " do kill($e(input,3,$l(input))) goto loop2
+	if $e(input,1,2)="G " do get($e(input,3,$l(input))) goto loop2
+	if $e(input,1,2)="O " do order($e(input,3,$l(input))) goto loop2
+	if $e(input,1,2)="Z " do zn($e(input,3,$l(input))) goto loop
+	if $e(input,1,2)="B " do blob($e(input,3,$l(input))) goto loopBlob
+	if $e(input,1,2)="E " do exec($e(input,3,$l(input))) goto loop
+	if input="F" d flush goto loop
+	if input="P" d ping goto loop2
+	if $e(input,1,2)="8 " do setEncoding($e(input,3,$l(input))) goto loop2
+	;if input="UTF8" use $io:(/IOTABLE="UTF8"::"-Q+W":$c(0)) goto loop
+	;if input="RAW" use $io:(/IOTABLE="RAW"::"-Q+W":$c(0)) goto loop
+	if input="EXIT" goto halt
+	if input="QUIT" goto quit
+	if input="HALT" goto halt
+	set output="-"_input_"- not recognized"_crlf write output
+	do end
+	goto loop2
 	;
 blob(name)
-	;s ^%test("blob") = "wer"
 	set type = $p(name,"://",1)
 	set where = $p(name,"://",2)
 	use $io:(/IOTABLE="RAW"::"-TS"::32000)	
-	i type="file" d
+	if type="file" d
 	.	set IO=$IO
-	.	;s ^%test("blob") = "wer"
 	.	open where:("WNS"):5
-	.	;s ^%test("blob") = $TEST
 	.	if $TEST=0 do
 	.	.	close where
-	.	.	u io
-	.	.	u $io:(/IOTABLE="UTF8"::"-Q+W":$c(0))
-	.	.	w "couldn't open device"
-	.	.	g quit
-	else  i type="global" do
+	.	.	use io
+	.	.	use $io:(/IOTABLE="UTF8"::"-Q+W":$c(0))
+	.	.	write "couldn't open device"
+	.	.	goto quit
+	else  if type="global" do
 	.	set it = 0
 	.	set where = "^"_where
 	quit
@@ -154,125 +141,129 @@ loopBlob
 	.	use where:(/IOTABLE="RAW"::"-Q+W"::32000)
 	.	write input
 	.	use IO:(/IOTABLE="RAW"::"-TS"::32000)
-	g loopBlob
+	goto loopBlob
 	;
 halt
-	k ^boobst("connected",$j)
+	kill ^boobst("connected", $j)
 	halt
 	;
 quit
 	;
-	i '$d(^boobst("monitor","listener",$j)) g halt
-	k ^boobst("monitor","listener",$j)
-	g loop
+	if '$d(^boobst("monitor", "listener", $j)) goto halt
+	kill ^boobst("monitor", "listener", $j)
+	goto loop
 	;
 kill(name)
-	k @name
-	w "ok.kill"
-	d end
+	kill @name
+	write "ok.kill"
+	do end
 	quit
 	;
 setEncoding(name)
-	u $io:(/IOTABLE=name::"-Q+W":$c(0))
-	w "ok.setEncoding"
-	d end
+	use $io:(/IOTABLE=name::"-Q+W":$char(0))
+	write "ok.setEncoding"
+	do end
 	quit
 setKey(input)
-	n %nameOfVariable
-	s %nameOfVariable = $p(input,$c(1),1)
-	s @%nameOfVariable = $e(input,$l(%nameOfVariable)+2,*)	
-	s %KEY(%nameOfVariable) = @%nameOfVariable
-	w "ok.setKey"
-	d end
+	new %nameOfVariable
+	set %nameOfVariable = $piece(input, $char(1), 1)
+	set @%nameOfVariable = $extract(input, $length(%nameOfVariable) + 2, *)
+	set %KEY(%nameOfVariable) = @%nameOfVariable
+	write "ok.setKey"
+	do end
 	quit
 	;
 set(input)
-	n %nameOfVariable
-	s %nameOfVariable = $p(input,$c(1),1)
-	s @%nameOfVariable = $e(input,$l(%nameOfVariable)+2,*)
-	w "ok.set"
-	d end
+	new %nameOfVariable
+	set %nameOfVariable = $piece(input, $char(1), 1)
+	set @%nameOfVariable = $extract(input, $length(%nameOfVariable) + 2, *)
+	write "ok.set"
+	do end
 	quit
 	;
 get(%nameOfRoutine)
 	write @%nameOfRoutine
-	d end
+	do end
 	quit
 	;
 order(%nameOfRoutine)
 	write $order(@%nameOfRoutine)
-	d end
+	do end
 	quit
 	;
-zn(name)
-	;zn name
-	w "ok.zn."_$zu(5)
+zn(%nameOfNS)
+	zn %nameOfNS
+	write "ok.zn."_$zu(5)
 	write *-3
 	quit
 	;	
 exec(%nameOfRoutine)
-	;s ^%tmp($i(^%tmp)) = $zu(5)_" : "_%nameOfRoutine
 	do @%nameOfRoutine
 	do end
 	kill
-	u $io:(/IOTABLE="UTF8"::"-Q+W":$c(0))
+	use $io:(/IOTABLE="UTF8"::"-Q+W":$c(0))
 	quit
 flush
 	kill
-	w "ok.flush"
-	u $io:(/IOTABLE="UTF8"::"-Q+W":$c(0))
+	write "ok.flush"
+	use $io:(/IOTABLE="UTF8"::"-Q+W":$c(0))
 	do end
 	quit
+	;
 ping
-	w "pong!"
+	write "pong!"
 	do end
 	quit
+	;
 end
 	;write $c(0)
 	write $c(6)_$c(6)
 	write *-3
 	quit
+	;
 gl(global)
-	n key, inKey, level, isArray, notFirst
-	s key = ""
-	s isArray = $$numberTest(global)
-	s notFirst = 0
-	if isArray  w "["
-	else  w "{"
-	f  s key = $order(@$na(@global@(key)))  q:key=""  d
+	new key, inKey, level, isArray, notFirst
+	set key = ""
+	set isArray = $$numberTest(global)
+	set notFirst = 0
+	if isArray  write "["
+	else  write "{"
+	for  set key = $order(@$na(@global@(key)))  quit:key=""  do
 	.	;w !,key,") ",$na(@global@(key)),$d(@$na(@global@(key)))
 	.	if notFirst w ","
-	.	else  s notFirst = 1
+	.	else  set notFirst = 1
 	.	set inKey = $na(@global@(key)), level = $d(@inKey)
 	.	if level = 10  do
-	.	.	w """"_key_""":"
+	.	.	write """"_key_""":"
 	.	.	do gl(inKey)
 	.	else  if level = 11 do
-	.	.	w """"_key_""":"
+	.	.	write """"_key_""":"
 	.	.	do create32kb(inKey)
 	.	else  do
-	.	.	if isArray  w $$makeValue(@global@(key))
-	.	.	else  w """"_key_""":"_$$makeValue(@global@(key))
-	if isArray  w "]"
-	else  w "}"
+	.	.	if isArray  write $$makeValue(@global@(key))
+	.	.	else  write """"_key_""":"_$$makeValue(@global@(key))
+	if isArray  write "]"
+	else  write "}"
 	quit
 numberTest(global)
-	n key, is
-	s key = "", is = 1
-	f  s key = $order(@$na(@global@(key))) q:key=""  d
+	new key, is
+	set key = "", is = 1
+	for  set key = $order(@$na(@global@(key))) quit:key=""  do
 	.	if key'=+key set is = 0 quit
 	quit is
-	
+	;
 create32kb(global)	
-	n key
-	s key = ""
-	w """"_@$na(@global)
-	f  s key = $order(@$na(@global@(key))) q:key=""  d
-	.	w @$na(@global@(key))
-	w """"
+	new key
+	set key = ""
+	write """"_@$na(@global)
+	for  set key = $order(@$na(@global@(key))) quit:key=""  do
+	.	write @$na(@global@(key))
+	write """"
 	quit
+	;
 makeValue(val)
 	if val = +val quit val
 	if val = "1true" quit "true"
 	if val = "0false" quit "false"
 	quit """"_val_""""
+	;
