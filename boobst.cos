@@ -1,5 +1,5 @@
-; Socket documentation
-; http://localhost:57772/csp/docbook/DocBook.UI.Page.cls?KEY=GIOD_tcp
+	; Socket documentation
+	; http://localhost:57772/csp/docbook/DocBook.UI.Page.cls?KEY=GIOD_tcp
 starter(msg)
 	set lv="boobstServer"_$$port()
 	lock +@(lv):0 e  set msg="already running" write msg quit
