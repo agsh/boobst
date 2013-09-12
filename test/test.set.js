@@ -13,7 +13,7 @@ const GLOBAL = '^test';
 
 describe('set', function() {
 	var bs = new BoobstSocket(require('./test.config'));
-	bs.on('debug', console.log);
+	// bs.on('debug', console.log); // uncomment for debug messages
 
 	beforeEach(function(done) {
 		bs.connect(function(err) {
