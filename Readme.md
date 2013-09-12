@@ -144,7 +144,7 @@ bs.set('a', ['abc', 1], 5);
 
 ### SaveObject
 
-Save JSON objects in database. Set with object value type implements same behaviour. Mapping JSON to globals is similar to document storage in this paper: http://www.mgateway.com/docs/universalNoSQL.pdf pp. 19-21
+Saves JSON objects in database. Set with object value type implements same behaviour. Mapping JSON to globals is similar to document storage in this paper: http://www.mgateway.com/docs/universalNoSQL.pdf pp. 19-21
 ``` JSON
 {
     "array": ["a", "ab", "abc"],
