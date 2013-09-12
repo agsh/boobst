@@ -111,7 +111,7 @@ bs.zn('%SYS', function(err, switched) {
 });
 ```
 
-### Exec
+### Execute
 
 Executes the routine. All local variables set previously are available in the routine.
 
