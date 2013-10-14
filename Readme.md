@@ -1,5 +1,6 @@
 # Boobst. Node.js Caché driver
 [![Build Status](https://travis-ci.org/agsh/boobst.png)](https://travis-ci.org/agsh/boobst)
+[![NPM version](https://badge.fury.io/js/boobst.png)](http://badge.fury.io/js/boobst)
 
 An Intersystems Caché driver that implements basic functionality and can run routines.
 Several things have yet to be implemented, but the driver can be used for simple use-cases.
