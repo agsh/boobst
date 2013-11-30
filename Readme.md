@@ -20,7 +20,7 @@ npm install boobst
 
 ## Usage
 
-1. Import Caché Object Script program `boobst.cos` to your Caché instance
+1. Import Caché Object Script program `boobst.m/cos` to your Caché instance
 2. Run Boobst server by typing `do start^boobst` in Caché terminal
 
 ## Sample program
@@ -45,7 +45,7 @@ bs.connect(function(err){
 ```
 
 ## Tests
-Tests uses Mocha test framework. You can install it by typing `npm install mocha`
+Tests use Mocha test framework. You can install it by typing `npm install mocha`
 You should specify configuration of Cache' Boobst server at ./test/test.config.js and then run tests this way: `npm test`
 
 ## Commands
@@ -81,7 +81,7 @@ bs.get('^var', ['a', 1], function(err, data) {
 
 ### Order (Next)
 
-Gets the next key based on current key.
+Gets the next key based on the current key.
 
 ``` Javascript
 bs.next('^var', ['a', 1], function(err, key) {
@@ -114,7 +114,7 @@ bs.zn('%SYS', function(err, switched) {
 
 ### Execute
 
-Executes the routine. All local variables set previously are available in the routine.
+Executes the routine. All local variables that have been set previously are available in the routine.
 
 ``` Javascript
 bs.set('a', 'value', function(err) {
@@ -126,7 +126,7 @@ bs.set('a', 'value', function(err) {
 });
 ```
 
-Considering that commands send to the database in series, we can write code to execute without callbacks.
+Considering that commands are sending to the database in series, we can write code which executing without callbacks.
 
 ``` Javascript
 bs.set('a', '2');
@@ -137,7 +137,7 @@ bs.execute('multAB^test' /**program body: "w a*b q"*/, function(err, data) {
 });
 ```
 
-Also, these two commands are equivalent and second version is preferable :
+Also, this two commands are equivalent and second version is preferable :
 ``` Javascript
 bs.set('a("abc",1)', 5);
 bs.set('a', ['abc', 1], 5);
