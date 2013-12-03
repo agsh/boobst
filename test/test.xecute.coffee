@@ -9,6 +9,7 @@ boobst = require '../boobst'
 BoobstSocket = boobst.BoobstSocket
 
 describe 'xecute', () ->
+  this.timeout 15000
   bs = new BoobstSocket(require './test.config')
 
   #bs.on('debug', console.log); # uncomment for debug messages
@@ -23,7 +24,7 @@ describe 'xecute', () ->
       done()
 
   describe '#run hello world', () ->
-    it 'should properly switch between namespaces', (done) ->
+    it 'should properly gave us hello or disallowed', (done) ->
       bs.xecute 'write "hello"', (err, data) ->
         console.log(data);
         assert.equal err, null

@@ -18,6 +18,7 @@
 
   describe('xecute', function() {
     var bs;
+    this.timeout(15000);
     bs = new BoobstSocket(require('./test.config'));
     beforeEach(function(done) {
       return bs.connect(function(err) {
@@ -33,7 +34,7 @@
       });
     });
     return describe('#run hello world', function() {
-      return it('should properly switch between namespaces', function(done) {
+      return it('should properly gave us hello or disallowed', function(done) {
         return bs.xecute('write "hello"', function(err, data) {
           console.log(data);
           assert.equal(err, null);
