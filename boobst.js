@@ -225,7 +225,6 @@ BoobstSocket.prototype.connect = function(callback) {
 BoobstSocket.prototype.onDataCommon = function(data) {
 	// проверяем, является ли этот чанк последним куском передаваемых данных
 	// у него в конце должны стоять символы \6\6
-	console.log(data.toString());
 	if ((data.length > 1) && (data[data.length-1] === 6) && (data[data.length-2] === 6)) {
 		if (this.out && (this.command === BCMD.EXECUTE || this.command === BCMD.XECUTE)){ // если мы пишем в поток
 			this.out.end(data.slice(0, data.length - 2));
