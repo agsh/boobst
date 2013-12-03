@@ -6,6 +6,9 @@ starter(msg)
 	lock -@(lv) set msg="started on "_$$port()
 	job start($$port())
 	quit
+allowXecute()
+	quit 0
+	;
 port() 
 	quit 6666
 	;
@@ -100,6 +103,7 @@ loop2
 	if $e(input,1,2)="Z " do zn($e(input,3,$l(input))) goto loop
 	if $e(input,1,2)="B " do blob($e(input,3,$l(input))) goto loopBlob
 	if $e(input,1,2)="E " do exec($e(input,3,$l(input))) goto loop
+	if $e(input,1,2)="X " do xecute($e(input,3,$l(input))) goto loop2
 	if input="F" d flush goto loop
 	if input="P" d ping goto loop2
 	if $e(input,1,2)="8 " do setEncoding($e(input,3,$l(input))) goto loop2
@@ -201,6 +205,12 @@ exec(%nameOfRoutine)
 	do @%nameOfRoutine
 	do end
 	kill
+	use $io:(/IOTABLE="UTF8"::"-Q+W":$c(0))
+	quit
+xecute(%codeToExecute)
+	if $$allowXecute()  xecute (%codeToExecute)
+	e  w "disallowed"
+	do end
 	use $io:(/IOTABLE="UTF8"::"-Q+W":$c(0))
 	quit
 flush

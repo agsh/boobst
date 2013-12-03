@@ -32,6 +32,7 @@ const
 		, HI: 11
 		, BLOB: 12
 		, ORDER: 13
+		, XECUTE: 14
 	}
 	;
 
@@ -113,8 +114,8 @@ function onData(data) {
 		case BCMD.NOP:
 			this.emit('debug', 'Data on NOP command: ' + data.toString());
 			break;
-		case BCMD.SETENCODING: case BCMD.KEY: case BCMD.SET: case BCMD.KILL: case BCMD.EXECUTE: case BCMD.FLUSH: case BCMD.PING: case BCMD.GET: case BCMD.ORDER:
-			this.onDataCommon(data);
+		case BCMD.SETENCODING: case BCMD.KEY: case BCMD.SET: case BCMD.KILL: case BCMD.EXECUTE: case BCMD.FLUSH: case BCMD.PING: case BCMD.GET: case BCMD.ORDER: case BCMD.XECUTE:
+		this.onDataCommon(data);
 			break;
 		case BCMD.ZN:
 			this.onDataZn(data);
@@ -224,8 +225,9 @@ BoobstSocket.prototype.connect = function(callback) {
 BoobstSocket.prototype.onDataCommon = function(data) {
 	// проверяем, является ли этот чанк последним куском передаваемых данных
 	// у него в конце должны стоять символы \6\6
+	console.log(data.toString());
 	if ((data.length > 1) && (data[data.length-1] === 6) && (data[data.length-2] === 6)) {
-		if (this.out && this.command === BCMD.EXECUTE){ // если мы пишем в поток
+		if (this.out && (this.command === BCMD.EXECUTE || this.command === BCMD.XECUTE)){ // если мы пишем в поток
 			this.out.end(data.slice(0, data.length - 2));
 			delete this.out;
 			if (this.callback) { // если у нас есть коллбек
@@ -242,7 +244,7 @@ BoobstSocket.prototype.onDataCommon = function(data) {
 			this._runCommandFromQueue();
 		}.bind(this));
 	} else {
-		if (this.out && this.command === BCMD.EXECUTE){ // если мы пишем в поток
+		if (this.out && (this.command === BCMD.EXECUTE || this.command === BCMD.XECUTE)){ // если мы пишем в поток
 			this.out.write(data);
 		} else {
 			this.data += data;
@@ -342,6 +344,12 @@ BoobstSocket.prototype._tryCommand = function(commandObject) { // попытат
 				}
 				this.socket.write('E ' + commandObject.name + EOL);
 				break;
+			case BCMD.XECUTE:
+				if (commandObject.out) {
+					this.out = commandObject.out;
+				}
+				this.socket.write('X ' + commandObject.name + EOL);
+				break;
 			case BCMD.GET:
 				this.socket.write('G ' + commandObject.name + EOL);
 				break;
@@ -410,6 +418,31 @@ BoobstSocket.prototype.execute = function(name, outStream, callback) {
 	var cmd = {
 		cmd: BCMD.EXECUTE,
 		name: name
+	};
+	if (outStream) {
+		if (typeof outStream === 'function') {
+			cmd.callback = outStream;
+		} else {
+			cmd.out = outStream;
+			if (callback) {
+				cmd.callback = callback;
+			}
+		}
+	}
+	this._tryCommand(cmd);
+	return this;
+};
+
+/**
+ * Evaluates any code on the server. Dangerous thing disabled on server by default
+ * @param {string} eval text to xecute
+ * @param {stream.Stream} [outStream] stream to send data
+ * @param {function(this:boobst.BoobstSocket, (null|Error), Object)} callback callback
+ */
+BoobstSocket.prototype.xecute = function(eval, outStream, callback) {
+	var cmd = {
+		cmd: BCMD.XECUTE,
+		name: eval
 	};
 	if (outStream) {
 		if (typeof outStream === 'function') {
