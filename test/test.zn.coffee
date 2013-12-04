@@ -12,6 +12,7 @@ NAMESPACES = ['%SYS', 'USER']
 GLOBAL = '^testZN';
 
 describe 'zn', () ->
+  this.timeout 15000
   bs = new BoobstSocket(require './test.config')
 
   #bs.on('debug', console.log); # uncomment for debug messages

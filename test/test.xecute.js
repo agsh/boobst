@@ -36,7 +36,6 @@
     return describe('#run hello world', function() {
       return it('should properly gave us hello or disallowed', function(done) {
         return bs.xecute('write "hello"', function(err, data) {
-          console.log(data);
           assert.equal(err, null);
           assert.ok(data === 'hello' || data === 'disallowed');
           return done();

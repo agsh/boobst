@@ -11,6 +11,7 @@ BoobstSocket = boobst.BoobstSocket
 GLOBAL = '^test1';
 
 describe 'set', () ->
+  this.timeout 15000
   bs = new BoobstSocket(require './test.config')
 
   # bs.on('debug', console.log); # uncomment for debug messages

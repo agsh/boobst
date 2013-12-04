@@ -12,6 +12,7 @@ var assert = require('assert')
 const GLOBAL = '^test';
 
 describe('set', function() {
+	this.timeout(15000);
 	var bs = new BoobstSocket(require('./test.config'));
 	// bs.on('debug', console.log); // uncomment for debug messages
 

@@ -26,7 +26,6 @@ describe 'xecute', () ->
   describe '#run hello world', () ->
     it 'should properly gave us hello or disallowed', (done) ->
       bs.xecute 'write "hello"', (err, data) ->
-        console.log(data);
         assert.equal err, null
         assert.ok (data == 'hello' || data == 'disallowed')
         done()
