@@ -14,6 +14,8 @@ port()
 	;
 version()
 	quit 7
+detailedVersion()
+	quit $$version()_".19"
 start(Port)
 	new io, port, lv
 	set port=$g(Port,$$port())
@@ -22,7 +24,7 @@ start(Port)
 	set io="|TCP|1"
 	; "PTAS" ?
 	open io:(/TRA=0:port:"CPAS":/NODELAY=0):20 e  w "Port "_port_" already served" QUIT
-	write "Boobst Server v.0."_$$version()_" started on Port:"_port,!
+	write "Boobst Server v.0."_$$detailedVersion()_" started on Port:"_port,!
 	use io
 	;
 serverLoop
@@ -257,9 +259,10 @@ gl(global)
 	quit
 numberTest(global)
 	new key, is
-	set key = "", is = 1
+	set key = "", is = 1, num = 0
 	for  set key = $order(@$na(@global@(key))) quit:key=""  do
-	.	if key'=+key set is = 0 quit
+	.	if key'=num set is = 0 quit
+	.	set num = num + 1
 	quit is
 	;
 create32kb(global)	
