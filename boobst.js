@@ -739,7 +739,7 @@ BoobstSocket.prototype._saveObject = function(variable, object, stack) {
 				}
 				// this fall-through is right
 			default:
-				self.set(variable + '("' + stack.join('","') + (stack.length > 0 ? '","' : "") + key.replace(/"/g, '""') + '")', object[key]);
+				self.set(variable, stack.concat(key), object[key]);
 		}
 	});
 };
