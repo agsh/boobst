@@ -13,9 +13,9 @@ port()
 	quit 6666
 	;
 version()
-	quit 7
+	quit 8
 detailedVersion()
-	quit $$version()_".19"
+	quit $$version()_".0"
 start(Port)
 	new io, port, lv
 	set port=$g(Port,$$port())
@@ -159,8 +159,8 @@ quit
 	kill ^boobst("monitor", "listener", $j)
 	goto loop
 	;
-kill(name)
-	kill @name
+kill(%nameOfVariable)
+	kill @%nameOfVariable
 	write "ok.kill"
 	do end
 	quit
@@ -170,6 +170,7 @@ setEncoding(name)
 	write "ok.setEncoding"
 	do end
 	quit
+	;
 setKey(input)
 	new %nameOfVariable
 	set %nameOfVariable = $piece(input, $char(1), 1)
@@ -188,7 +189,8 @@ set(input)
 	quit
 	;
 get(%nameOfRoutine)
-	write @%nameOfRoutine
+	if $d(@%nameOfRoutine) = 10 do gl(%nameOfRoutine) if 1
+	else  write @%nameOfRoutine
 	do end
 	quit
 	;
