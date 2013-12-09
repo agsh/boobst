@@ -732,12 +732,8 @@ BoobstSocket.prototype._saveObject = function(variable, object, stack) {
 			case 'function':
 				break;
 			case 'boolean':
-				if (object[key]) {
-					object[key] = '1true';
-				} else {
-					object[key] = '0false';
-				}
-				// this fall-through is right
+				self.set(variable, stack.concat(key), object[key] ? '1true' : '0false');
+				break;
 			default:
 				self.set(variable, stack.concat(key), object[key]);
 		}
