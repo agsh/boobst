@@ -248,7 +248,7 @@ gl(global)
 	.	else  set notFirst = 1
 	.	set inKey = $na(@global@(key)), level = $d(@inKey)
 	.	if level = 10  do
-	.	.	write """"_key_""":"
+	.	.	i 'isArray write """"_key_""":"
 	.	.	do gl(inKey)
 	.	else  if level = 11 do
 	.	.	write """"_key_""":"
