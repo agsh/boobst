@@ -101,6 +101,7 @@ loop2
 	if $e(input,1,2)="Q " do setKey($e(input,3,$l(input))) goto loop2
 	if $e(input,1,2)="K " do kill($e(input,3,$l(input))) goto loop2
 	if $e(input,1,2)="G " do get($e(input,3,$l(input))) goto loop2
+	if $e(input,1,2)="J " do getJSON($e(input,3,$l(input))) goto loop2
 	if $e(input,1,2)="O " do order($e(input,3,$l(input))) goto loop2
 	if $e(input,1,2)="Z " do zn($e(input,3,$l(input))) goto loop
 	if $e(input,1,2)="B " do blob($e(input,3,$l(input))) goto loopBlob
@@ -191,6 +192,11 @@ set(input)
 get(%nameOfRoutine)
 	if $d(@%nameOfRoutine) = 10 do gl(%nameOfRoutine) if 1
 	else  write @%nameOfRoutine
+	do end
+	quit
+	;
+getJSON(%nameOfRoutine)
+	do gl(%nameOfRoutine) if 1
 	do end
 	quit
 	;
