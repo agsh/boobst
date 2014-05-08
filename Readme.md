@@ -20,7 +20,7 @@ npm install boobst
 
 ## Usage
 
-1. Import Caché Object Script program `boobst.m/cos` to your Caché instance
+1. Import Caché Object Script program `boobst.m` (please rename it to `boobst.int`. I use `.m` extension for MUMPS legacy) to your Caché instance
 2. Run Boobst server by typing `do start^boobst` in Caché terminal
 
 ## Sample program
