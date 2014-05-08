@@ -481,12 +481,6 @@ BoobstSocket.prototype.get = function(name, subscript, forceJSON, callback) {
 	} else {
 		name = createNameFromSubscript(name, subscript);
 	}
-	console.log({
-		cmd: BCMD.GET,
-		name: name,
-		forceJSON: forceJSON ? 'f' : '',
-		callback: callback
-	});
 	this._tryCommand({
 		cmd: BCMD.GET,
 		name: name,
