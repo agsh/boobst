@@ -3,7 +3,7 @@
  * Маленький клиент для работы с СУБД Cache'
  * Для отладки используйте метод .emit('debug')
  * @author Andrew D. Laptev <a.d.laptev@gmail.com>
- * @version 0.8.1
+ * @version 0.8.2
  * @license AGPL
  **/
 
