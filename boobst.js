@@ -3,7 +3,7 @@
  * Маленький клиент для работы с СУБД Cache'
  * Для отладки используйте метод .emit('debug')
  * @author Andrew D. Laptev <a.d.laptev@gmail.com>
- * @version 0.7.16
+ * @version 0.8.1
  * @license AGPL
  **/
 
@@ -224,17 +224,17 @@ BoobstSocket.prototype.connect = function(callback) {
  */
 BoobstSocket.prototype.onDataCommon = function(data) {
 	// проверяем, является ли этот чанк последним куском передаваемых данных
-	// у него в конце должны стоять символы \6\6
+	// it must have \6\6 characters at the end
 	if ((data.length > 1) && (data[data.length-1] === 6) && (data[data.length-2] === 6)) {
-		if (this.out && (this.command === BCMD.EXECUTE || this.command === BCMD.XECUTE)){ // если мы пишем в поток
+		if (this.out && (this.command === BCMD.EXECUTE || this.command === BCMD.XECUTE)){ // if we're writing into stream
 			this.out.end(data.slice(0, data.length - 2));
 			delete this.out;
-			if (this.callback) { // если у нас есть коллбек
-				this.callback.call(this, null); // this.data тут нет
+			if (this.callback) { // if we have callback
+				this.callback.call(this, null); // we haven't get this.data here
 			}
 		} else {
 			this.data += data.slice(0, data.length - 2);
-			if (this.callback) { // если у нас есть коллбек
+			if (this.callback) { // if we have callback
 				this.callback.call(this, null, this.data);
 			}
 		}
@@ -243,7 +243,7 @@ BoobstSocket.prototype.onDataCommon = function(data) {
 			this._runCommandFromQueue();
 		}.bind(this));
 	} else {
-		if (this.out && (this.command === BCMD.EXECUTE || this.command === BCMD.XECUTE)){ // если мы пишем в поток
+		if (this.out && (this.command === BCMD.EXECUTE || this.command === BCMD.XECUTE)){ // if we're writing into stream
 			this.out.write(data);
 		} else {
 			this.data += data;
@@ -350,7 +350,7 @@ BoobstSocket.prototype._tryCommand = function(commandObject) { // попытат
 				this.socket.write('X ' + commandObject.name + EOL);
 				break;
 			case BCMD.GET:
-				this.socket.write('G ' + commandObject.name + EOL);
+				this.socket.write('G ' + commandObject.forceJSON + EON + commandObject.name + EOL);
 				break;
 			case BCMD.KEY:
 				this.socket.write('Q ' + commandObject.name + EON + commandObject.value + EOL);
@@ -459,20 +459,38 @@ BoobstSocket.prototype.xecute = function(eval, outStream, callback) {
 
 /**
  * Get value
- * @param {string} name Имя переменной или узла глобала
- * @param {(Array<string>|function(this:boobst.BoobstSocket, (null|Error), Object))} [subscript]
+ * @param {string} name Name of variable or global node
+ * @param {(Array<string>|boolean|function(this:boobst.BoobstSocket, (null|Error), Object))} [subscript]
+ * @param {boolean|function(this:boobst.BoobstSocket, (null|Error), Object)} [forceJSON] force get JSON from node
  * @param {function(this:boobst.BoobstSocket, (null|Error), Object)} callback Функция-коллбэк (error, data)
  */
-BoobstSocket.prototype.get = function(name, subscript, callback) {
-	if (typeof subscript === 'function') {
-		isValidCacheVar(name);
-		callback = subscript;
+BoobstSocket.prototype.get = function(name, subscript, forceJSON, callback) {
+	if (callback === undefined) {
+		if (forceJSON !== undefined) {
+			callback = forceJSON;
+			if (typeof subscript === 'boolean') {
+				forceJSON = subscript;
+			} else {
+				name = createNameFromSubscript(name, subscript);
+				forceJSON = false;
+			}
+		} else {
+			callback = subscript;
+			forceJSON = false;
+		}
 	} else {
 		name = createNameFromSubscript(name, subscript);
 	}
+	console.log({
+		cmd: BCMD.GET,
+		name: name,
+		forceJSON: forceJSON ? 'f' : '',
+		callback: callback
+	});
 	this._tryCommand({
 		cmd: BCMD.GET,
 		name: name,
+		forceJSON: forceJSON ? 'f' : '',
 		callback: callback
 	});
 	return this;

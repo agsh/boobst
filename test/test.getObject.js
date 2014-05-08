@@ -20,7 +20,7 @@
 
   describe('getObject', function() {
     var bs;
-    this.timeout(15000);
+    this.timeout(1000);
     bs = new BoobstSocket(require('./test.config'));
     beforeEach(function(done) {
       return bs.connect(function(err) {
