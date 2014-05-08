@@ -15,7 +15,7 @@ port()
 version()
 	quit 8
 detailedVersion()
-	quit $$version()_".0"
+	quit $$version()_".1"
 start(Port)
 	new io, port, lv
 	set port=$g(Port,$$port())
@@ -190,10 +190,13 @@ set(input)
 	;
 get(%input)
 	new %params, %name
-	set %params = $piece(%input, $char(1), 1)
-	set %name = $extract(%input, $length(%params) + 2, *)
-	if %params = "f"  do gl(%name) do end quit
-	if $d(@%name) = 10 do gl(%name)  do end quit
+	set %params=$piece(%input, $char(1), 1)
+	; params: n - get only node value
+	;         f - force build json w/o first node value
+	;         /empty/ - depends on first node value
+	set %name=$piece(%input, $char(1), 2)
+	if %params="f" do gl(%name) do end quit
+	if $d(@%name)=10 do gl(%name) do end quit
 	write @%name
 	do end
 	quit
