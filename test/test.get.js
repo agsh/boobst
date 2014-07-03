@@ -44,13 +44,14 @@
     return describe('#get', function() {
       var fulfill, nodeData, object, subscript;
       object = {
-        "array": ["a", "ab", "abc"],
+        "array": ["a", "ab", "a\"bc"],
         "object": {
           "a": "a",
           "b": 2
         },
         "boolean": true,
-        "number": 42
+        "number": 42,
+        "quotes": 'some"thing'
       };
       subscript = ['a', 'b'];
       nodeData = 'node data';

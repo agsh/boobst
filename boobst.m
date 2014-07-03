@@ -255,14 +255,14 @@ gl(global)
 	.	else  set notFirst = 1
 	.	set inKey = $na(@global@(key)), level = $d(@inKey)
 	.	if level = 10  do
-	.	.	i 'isArray write """"_key_""":"
+	.	.	i 'isArray write """"_$replace(key,"""","\""")_""":"
 	.	.	do gl(inKey)
 	.	else  if level = 11 do
 	.	.	write """"_key_""":"
 	.	.	do create32kb(inKey)
 	.	else  do
 	.	.	if isArray  write $$makeValue(@global@(key))
-	.	.	else  write """"_key_""":"_$$makeValue(@global@(key))
+	.	.	else  write """"_$replace(key,"""","\""")_""":"_$$makeValue(@global@(key))
 	if isArray  write "]"
 	else  write "}"
 	quit
@@ -274,12 +274,12 @@ numberTest(global)
 	.	set num = num + 1
 	quit is
 	;
-create32kb(global)	
+create32kb(global)
 	new key
 	set key = ""
 	write """"_@$na(@global)
 	for  set key = $order(@$na(@global@(key))) quit:key=""  do
-	.	write @$na(@global@(key))
+	.	write $replace(@$na(@global@(key)),"""","\""")
 	write """"
 	quit
 	;
@@ -287,5 +287,5 @@ makeValue(val)
 	if val = +val quit val
 	if val = "1true" quit "true"
 	if val = "0false" quit "false"
-	quit """"_val_""""
+	quit """"_$replace(val,"""","\""")_""""
 	;

@@ -29,7 +29,7 @@ describe 'get', () ->
 
   describe '#get', () ->
     object = {
-      "array": ["a", "ab", "abc"]
+      "array": ["a", "ab", "a\"bc"]
       "object":
         "a": "a"
         "b": 2

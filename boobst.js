@@ -3,7 +3,7 @@
  * Маленький клиент для работы с СУБД Cache'
  * Для отладки используйте метод .emit('debug')
  * @author Andrew D. Laptev <a.d.laptev@gmail.com>
- * @version 0.8.2
+ * @version 0.8.3
  * @license AGPL
  **/
 
@@ -517,6 +517,9 @@ BoobstSocket.prototype.setEncoding = function(value, callback) {
  * @return {boobst.BoobstSocket}
  */
 BoobstSocket.prototype.set = function(name, subscripts, value, callback) {
+	if (~name.indexOf('"')) {
+		throw new Error("You couldn't use '\"' in variable names");
+	}
 	var typeOfValue = typeof value;
 	if (typeOfValue === 'function' || (typeOfValue === 'undefined' && !Array.isArray(subscripts))) { // missing subscripts attribute
 		callback = value;
