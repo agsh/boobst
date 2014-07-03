@@ -35,6 +35,7 @@ describe 'get', () ->
         "b": 2
       "boolean": true
       "number": 42
+      "quotes": 'some"thing'
     }
     subscript = ['a', 'b']
     nodeData = 'node data'
