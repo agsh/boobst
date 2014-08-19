@@ -518,7 +518,7 @@ BoobstSocket.prototype.setEncoding = function(value, callback) {
  */
 BoobstSocket.prototype.set = function(name, subscripts, value, callback) {
 	if (~name.indexOf('"')) {
-		throw new Error("You couldn't use '\"' in variable names");
+		throw new Error("You couldn't use '\"' in variable names: " + name);
 	}
 	var typeOfValue = typeof value;
 	if (typeOfValue === 'function' || (typeOfValue === 'undefined' && !Array.isArray(subscripts))) { // missing subscripts attribute
