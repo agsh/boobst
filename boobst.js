@@ -3,7 +3,7 @@
  * Маленький клиент для работы с СУБД Cache'
  * Для отладки используйте метод .emit('debug')
  * @author Andrew D. Laptev <a.d.laptev@gmail.com>
- * @version 0.8.3
+ * @version 0.8.4
  * @license AGPL
  **/
 
@@ -202,7 +202,7 @@ BoobstSocket.prototype.connect = function(callback) {
 		if (callback) {
 			/**
 			 *
-			 * @type {(function(this:boobst.BoobstSocket, (null|Error)))=}
+			 * @type {(function(this:boobst.BoobstSocket, (null|Error)))}
 			 */
 			this.onConnectionCallback = callback;
 		}
@@ -233,7 +233,7 @@ BoobstSocket.prototype.onDataCommon = function(data) {
 				this.callback.call(this, null); // we haven't get this.data here
 			}
 		} else {
-			this.data += data.slice(0, data.length - 2);
+			this.data = Buffer.concat([this.data, data.slice(0, data.length - 2)]);
 			if (this.callback) { // if we have callback
 				this.callback.call(this, null, this.data);
 			}
@@ -246,7 +246,7 @@ BoobstSocket.prototype.onDataCommon = function(data) {
 		if (this.out && (this.command === BCMD.EXECUTE || this.command === BCMD.XECUTE)){ // if we're writing into stream
 			this.out.write(data);
 		} else {
-			this.data += data;
+			this.data = Buffer.concat([this.data, data]);
 		}
 	}
 };
@@ -329,7 +329,7 @@ BoobstSocket.prototype._tryCommand = function(commandObject) { // попытат
 	if (this.command !== BCMD.NOP || this.connected === false) {
 		this.queue.push(commandObject);
 	} else {
-		this.data = "";
+		this.data = new Buffer(0);
 		this.command = commandObject.cmd;
 		this.callback = commandObject.callback;
 		this.emit('debug', 'command: ' + commandObject.cmd +
