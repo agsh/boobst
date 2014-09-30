@@ -8,7 +8,7 @@ assert = require 'assert'
 boobst = require '../boobst'
 BoobstSocket = boobst.BoobstSocket
 
-NAMESPACES = ['%SYS', 'USER']
+NAMESPACES = ['SOLP', 'SOULP']
 GLOBAL = '^testZN';
 
 describe 'zn', () ->

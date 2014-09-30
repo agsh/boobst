@@ -15,7 +15,7 @@ port()
 version()
 	quit 8
 detailedVersion()
-	quit $$version()_".1"
+	quit $$version()_".5"
 start(Port)
 	new io, port, lv
 	set port=$g(Port,$$port())
@@ -90,6 +90,9 @@ loop
 	set %CGIEVAR("SERVER_PROTOCOL")="HTTP/1.1"
 	set %CGIEVAR("SERVER_SOFTWARE")="Node.js"
 	set %KEY("MGWLIB")="/cgi-bin/nph-mgwcgi.exe"
+	d var^bscito
+	d VAR^bsg
+	do MAINVAR^bsg
 loop2 
 	read *c
 	read input set input=$c(c)_input
@@ -274,7 +277,7 @@ numberTest(global)
 	.	set num = num + 1
 	quit is
 	;
-create32kb(global)
+create32kb(global)	
 	new key
 	set key = ""
 	write """"_@$na(@global)
@@ -287,5 +290,15 @@ makeValue(val)
 	if val = +val quit val
 	if val = "1true" quit "true"
 	if val = "0false" quit "false"
-	quit """"_$replace(val,"""","\""")_""""
+	set val = $$encodeJSON(val)
+	quit """"_val_""""
+	;	
+encodeJSON(s) ; JSON encoding
+	n a
+	s a = $replace(s,"\","\\")
+	s a = $replace(a,"""","\""")
+	s a = $replace(a,$c(9),"\t")
+	s a = $replace(a,$c(10),"\n") 
+	s a = $replace(a,$c(13),"") 
+	q a
 	;
