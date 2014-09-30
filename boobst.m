@@ -15,7 +15,7 @@ port()
 version()
 	quit 8
 detailedVersion()
-	quit $$version()_".5"
+	quit $$version()_".6"
 start(Port)
 	new io, port, lv
 	set port=$g(Port,$$port())
@@ -72,7 +72,6 @@ command ;
 	write $$version()_";"_$j_";"_$zu(5)
 	write *-3
 loop
-	set crlf=$c(13,10)
 	;set %CGIEVAR("AUTH_PASSWORD")=""
 	;set %CGIEVAR("AUTH_TYPE")=""
 	set %CGIEVAR("CONTENT_TYPE")=""
@@ -81,18 +80,11 @@ loop
 	set %CGIEVAR("HTTP_COOKIE")=""
 	set %CGIEVAR("HTTP_REFERER")=""
 	;set %CGIEVAR("HTTP_SOAPACTION")=""
-	set %CGIEVAR("PATH_TRANSLATED")="C:/proj/js/cgi-bin/nph-mgwcgi.exe"
 	set %CGIEVAR("REMOTE_HOST")=""
 	set %CGIEVAR("REMOTE_IDENT")=""
 	set %CGIEVAR("REMOTE_USER")=""
-	set %CGIEVAR("REQUEST_METHOD")="GET"
-	set %CGIEVAR("SERVER_PORT")=80
 	set %CGIEVAR("SERVER_PROTOCOL")="HTTP/1.1"
 	set %CGIEVAR("SERVER_SOFTWARE")="Node.js"
-	set %KEY("MGWLIB")="/cgi-bin/nph-mgwcgi.exe"
-	d var^bscito
-	d VAR^bsg
-	do MAINVAR^bsg
 loop2 
 	read *c
 	read input set input=$c(c)_input
