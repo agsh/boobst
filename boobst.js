@@ -320,8 +320,8 @@ BoobstSocket.prototype.onDataZn = function(data) {
 };
 //--------------------------------------------------------------------------
 /**
- * Попробовать выполнить команду
- * Если сокет не занят, команда выполняется, иначе - становится в очередь
+ * Try to execute command
+ * If socket is not empty, command pushed into queue
  * @param {Object} commandObject
  * @private
  */
@@ -408,7 +408,7 @@ BoobstSocket.prototype._tryCommand = function(commandObject) { // попытат
 };
 
 /**
- * Выполнить команду
+ * Execute routine
  * @param {string} name имя существующей команды
  * @param {stream.Stream} [outStream] поток, в который пересылать ответ сервера
  * @param {function(this:boobst.BoobstSocket, (null|Error), Object)} callback callback
@@ -462,7 +462,7 @@ BoobstSocket.prototype.xecute = function(eval, outStream, callback) {
  * @param {string} name Name of variable or global node
  * @param {(Array<string>|boolean|function(this:boobst.BoobstSocket, (null|Error), Object))} [subscript]
  * @param {boolean|function(this:boobst.BoobstSocket, (null|Error), Object)} [forceJSON] force get JSON from node
- * @param {function(this:boobst.BoobstSocket, (null|Error), Object)} callback Функция-коллбэк (error, data)
+ * @param {function(this:boobst.BoobstSocket, (null|Error), Buffer)} callback Callback-function (error, data)
  */
 BoobstSocket.prototype.get = function(name, subscript, forceJSON, callback) {
 	if (callback === undefined) {
@@ -517,9 +517,11 @@ BoobstSocket.prototype.setEncoding = function(value, callback) {
  * @return {boobst.BoobstSocket}
  */
 BoobstSocket.prototype.set = function(name, subscripts, value, callback) {
+	/** let this part will be filtered by server-side
 	if (~name.indexOf('"')) {
 		throw new Error("You couldn't use '\"' in variable names: " + name);
 	}
+	*/
 	var typeOfValue = typeof value;
 	if (typeOfValue === 'function' || (typeOfValue === 'undefined' && !Array.isArray(subscripts))) { // missing subscripts attribute
 		callback = value;
@@ -576,7 +578,7 @@ BoobstSocket.prototype.set = function(name, subscripts, value, callback) {
 };
 
 /**
- *
+ * Returns next subscript based on current
  * @param name
  * @param subscript
  * @param {Function} callback
@@ -592,7 +594,7 @@ BoobstSocket.prototype.order = BoobstSocket.prototype.next = function(name, subs
 };
 
 /**
- * Сменить пространство имён БД
+ * Changes namespace
  * @param {string} name Существующий namespace
  * @param {function} [callback] callback
  */
@@ -619,7 +621,7 @@ BoobstSocket.prototype.zn = function(name, callback) {
 };
 
 /**
- * Удалить глобал или локал
+ * Kill a global or a local
  * @param {string} name
  * @param {Array<string> | function(this:boobst.BoobstSocket, (null|Error))} [subscripts]
  * @param {function(this:boobst.BoobstSocket, (null|Error))} [callback] callback
@@ -640,8 +642,8 @@ BoobstSocket.prototype.kill = function(name, subscripts, callback) {
 };
 
 /**
- * Передать бинарные данные
- * @param {string} uri uri формата file://<путь_к_файлу> или global://<имя_глобала_без_^>
+ * Send binary data
+ * @param {string} uri uri format is: file://<file_path> или global://<global_name_w/o_^>
  * @param {Stream} stream поток данных
  * @param {function(this:boobst.BoobstSocket, (null|Error))} [callback] callback
  */
@@ -672,7 +674,7 @@ BoobstSocket.prototype.flush = function(callback) {
 };
 
 /**
- * Проверить состояние сервера
+ * Check server state
  * @param {function(this:boobst.BoobstSocket, (null|Error), {string})} [callback] callback
  */
 BoobstSocket.prototype.ping = function(callback) {
@@ -681,7 +683,7 @@ BoobstSocket.prototype.ping = function(callback) {
 };
 
 /**
- * Отключиться от базы данных
+ * Disconnect from the db
  * @param {function(this:boobst.BoobstSocket, (null|Error))} [callback] callback
  */
 BoobstSocket.prototype.disconnect = function(callback) {
@@ -691,7 +693,7 @@ BoobstSocket.prototype.disconnect = function(callback) {
 };
 
 /**
- * Запустить следующую команду из очереди
+ * Start next command from the queue
  * @private
  */
 BoobstSocket.prototype._runCommandFromQueue = function() {
@@ -702,7 +704,7 @@ BoobstSocket.prototype._runCommandFromQueue = function() {
 };
 
 /**
- * Сохранить в каше javascript-объект
+ * Save javascript-оbject in Cache'
  * @param {string} name имя переменной или глобала (начинается с ^)
  * @param {Array.<string>} [subscripts]
  * @param {Object} object js-объект
