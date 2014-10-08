@@ -16,8 +16,11 @@ const
 	, EON = String.fromCharCode(1)
 	, VERSION = 8
 	, VALID_CACHE_VAR_RE = /^\^?%?[\-A-Z\.a-z]+[\w\d]*(\(("[A-Za-z_\-\.\+\\/0-9]+"|\d)(,("[A-Za-z_\-\.\+\\/0-9]+"|\d))*\))?$/
-	, CACHE_MAX_SIZE = 32754
-	, BCMD = {
+	, CACHE_MAX_SIZE = 32754,
+	/**
+	 * @enum {number}
+	 */
+    BCMD = {
 		NOP: 0
 		, SET: 1
 		, GET: 2
@@ -133,10 +136,10 @@ function onData(data) {
 }
 
 /**
- * Класс Boobst Socket
- * @param options
- * @param {number} [options.port] порт
- * @param {string} [options.host] хост
+ * Boobst Socket
+ * @param {Object} options
+ * @param {number} [options.port] port
+ * @param {string} [options.host] host
  * @property {Function} callback
  * @property {Function} emit
  * @extends events.EventEmitter
@@ -144,29 +147,29 @@ function onData(data) {
  */
 var BoobstSocket = function(options) {
 	/**
-	 * Идентификатор процесса на сервере
+	 * Server's process id
 	 * @type {number}
 	 */
 	this.id = 0;
 	options = options || {};
 	/**
-	 * Версия протокола
+	 * Protocol varsion
 	 * @type {number}
 	 */
 	this.version = VERSION;
 	this.out = null;
 	/**
-	 * Очередь событий
+	 * Commands queue
 	 * @type {Array}
 	 */
 	this.queue = [];
 	/**
-	 * Порт
+	 * Port
 	 * @type {number}
 	 */
 	this.port = options.port || 6666;
 	/**
-	 * Хост
+	 * Host
 	 * @type {string}
 	 */
 	this.host = options.host || options.server || 'localhost';
@@ -176,7 +179,7 @@ var BoobstSocket = function(options) {
 	this.command = BCMD.HI;
 	this.connected = false;
 	/**
-	 * Сокет соединения
+	 * Connection socket
 	 * @type {net.Socket}
 	 */
 	this.socket = new net.Socket();
@@ -192,7 +195,7 @@ var BoobstSocket = function(options) {
 util.inherits(BoobstSocket, events.EventEmitter);
 
 /**
- * Соединиться с БД
+ * Connect to DB
  * @param {function(this:boobst.BoobstSocket, (null|Error))} [callback] callback
  * @return {boobst.BoobstSocket}
  */
@@ -218,9 +221,9 @@ BoobstSocket.prototype.connect = function(callback) {
 
 //----------------------------------------------------------------------------------------------------------------------
 /**
- * Обработчик данных, пришедших от сервера в общем случае
+ * Common event handler
  * @private
- * @param {Buffer} data чанк данных
+ * @param {Buffer} data     data chunk
  */
 BoobstSocket.prototype.onDataCommon = function(data) {
 	// проверяем, является ли этот чанк последним куском передаваемых данных
@@ -252,9 +255,9 @@ BoobstSocket.prototype.onDataCommon = function(data) {
 };
 
 /**
- * Обработчик данных, пришедших от сервера в момент коннекта
+ * Connect event handler
  * @private
- * @param {Buffer} data приветствие
+ * @param {Buffer} data     greeting
  */
 BoobstSocket.prototype.onDataGreeting = function(data){
 	this.emit('debug', 'connected');
