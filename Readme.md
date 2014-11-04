@@ -164,6 +164,8 @@ bs.set('a', ['abc', 1], 5);
 
 ### SaveObject
 
+Deprecated. Use `set` command instead which can save javascript objects into database too.
+
 Saves JSON objects in database. Set with object value type implements same behaviour. Mapping JSON to globals is similar to document storage in this paper: http://www.mgateway.com/docs/universalNoSQL.pdf pp. 19-21
 ``` JSON
 {
