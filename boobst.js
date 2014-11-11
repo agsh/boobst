@@ -89,15 +89,15 @@ function onClose(transmittionErr) {
 		}
 		this.command = BCMD.HI;
 		// trying to establish connection at growing time intervals
-		if (!this.connectionTimeout) {
-			this.connectionTimeout = 0;
+		if (!this._connectionTimeout) {
+			this._connectionTimeout = 0;
 		} else {
-			this.connectionTimeout += 1000;
+			this._connectionTimeout += 1000;
 		}
 
-		setTimeout(function(){
+		setTimeout(function() {
 			this.connect();
-		}.bind(this), this.connectionTimeout);
+		}.bind(this), this._connectionTimeout);
 		//self.connect();
 	} else { // if we calls .disconnect() method
 		if (this.callback) {
@@ -210,7 +210,7 @@ BoobstSocket.prototype.connect = function(callback) {
 			this.onConnectionCallback = callback;
 		}
 		this.socket.connect(this.port, this.host);
-		delete this.connectionTimeout;
+		delete this._connectionTimeout;
 	} catch(e) {
 		if (callback) {
 			callback(new Error(e));
@@ -228,7 +228,7 @@ BoobstSocket.prototype.connect = function(callback) {
 BoobstSocket.prototype.onDataCommon = function(data) {
 	// проверяем, является ли этот чанк последним куском передаваемых данных
 	// it must have \6\6 characters at the end
-	if ((data.length > 1) && (data[data.length-1] === 6) && (data[data.length-2] === 6)) {
+	if ((data.length > 1) && (data[data.length - 1] === 6) && (data[data.length - 2] === 6)) {
 		if (this.out && (this.command === BCMD.EXECUTE || this.command === BCMD.XECUTE)){ // if we're writing into stream
 			this.out.end(data.slice(0, data.length - 2));
 			delete this.out;
@@ -241,7 +241,7 @@ BoobstSocket.prototype.onDataCommon = function(data) {
 				this.callback.call(this, null, this.data);
 			}
 		}
-		process.nextTick(function(){
+		process.nextTick(function() {
 			this.command = BCMD.NOP;
 			this._runCommandFromQueue();
 		}.bind(this));
@@ -259,7 +259,7 @@ BoobstSocket.prototype.onDataCommon = function(data) {
  * @private
  * @param {Buffer} data     greeting
  */
-BoobstSocket.prototype.onDataGreeting = function(data){
+BoobstSocket.prototype.onDataGreeting = function(data) {
 	this.emit('debug', 'connected');
 	this.connected = true;
 	var dataStr = data.toString().split(';');
@@ -291,7 +291,7 @@ BoobstSocket.prototype.onDataGreeting = function(data){
 		delete this.onConnectionCallback;
 	}
 
-	process.nextTick(function(){
+	process.nextTick(function() {
 		this.command = BCMD.NOP;
 		this._runCommandFromQueue();
 	}.bind(this));
@@ -316,7 +316,7 @@ BoobstSocket.prototype.onDataZn = function(data) {
 			this.callback.call(this, new Error(str));
 		}
 	}
-	process.nextTick(function(){
+	process.nextTick(function() {
 		this.command = BCMD.NOP;
 		this._runCommandFromQueue();
 	}.bind(this));
@@ -378,7 +378,7 @@ BoobstSocket.prototype._tryCommand = function(commandObject) { // попытат
 				break;
 			case BCMD.BLOB:
 				this.socket.write('B ' + commandObject.uri + EOL);
-				commandObject.stream.on('end', function(){
+				commandObject.stream.on('end', function() {
 					this.socket.end();
 					/*
 					if (this.callback) { // если у нас есть коллбек
@@ -539,7 +539,7 @@ BoobstSocket.prototype.set = function(name, subscripts, value, callback) {
 	if (typeOfValue === 'string' || Buffer.isBuffer(value)) {
 		if (typeOfValue === 'string' && Buffer.byteLength(value) > CACHE_MAX_SIZE || value.length > CACHE_MAX_SIZE) {
 			value = new Buffer(value);
-			callback = callback || function () {};
+			callback = callback || function() {};
 			var completed = 0;
 			for (var length = value.length, i = 0, begin = 0; begin < length; i += 1, begin += CACHE_MAX_SIZE) {
 				completed += 1;
@@ -742,7 +742,7 @@ BoobstSocket.prototype.saveObject = function(name, subscripts, object, callback)
  */
 BoobstSocket.prototype._saveObject = function(variable, object, stack) {
 	var self = this;
-	Object.keys(object).forEach(function(key){
+	Object.keys(object).forEach(function(key) {
 		switch (typeof object[key]) {
 			case 'object':
 				stack.push(key.replace(/"/g, '""'));
