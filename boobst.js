@@ -517,7 +517,7 @@ BoobstSocket.prototype.setEncoding = function(value, callback) {
  * @param {string|Buffer|Array<string>} [subscripts]
  * @param {string|Buffer|function} value значение переменной, меньше 32к //TODO 32kb
  * @param {?function(this:boobst.BoobstSocket, (null|Error), string)} [callback] callback
- * @return {boobst.BoobstSocket}
+ * @return {boobst.BoobstSocket|BoobstSocket}
  */
 BoobstSocket.prototype.set = function(name, subscripts, value, callback) {
 	/** let this part will be filtered by server-side
@@ -567,10 +567,13 @@ BoobstSocket.prototype.set = function(name, subscripts, value, callback) {
 			});
 			return this;
 		}
+	} else if (typeOfValue === 'function') {
+		// do nothing
+		return this;
 	} else if (typeOfValue === 'object') {
 		return BoobstSocket.prototype.saveObject.apply(this, arguments);
 	} else {
-		var err = new Error('Method `set` can accept only `string`, `object`, `Buffer`, `number` value types. Not: ' + value);
+		var err = new Error('Method `set` can accept only `string`, `object`, `Buffer`, `number` value types. And ignores `function`. Not: ' + value);
 		if (callback) {
 			callback(err);
 		} else {
