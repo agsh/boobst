@@ -70,12 +70,31 @@ global(subscript, 2) = <third part>
 
 ### Get
 
-Get local or global variable.
+Get local or global variable. Notice that data type allways has a Buffer type (for binary data) and you should manually convert it to string or other type if you want.
 
 ``` Javascript
 bs.get('^var', ['a', 1], function(err, data) {
     if (err) { console.log(err); return; }
-    console.log(data);
+    console.log(data.toString());
+});
+```
+
+If we have previously save a javascript object with ```set``` or ```saveObject``` command, we can get it back. Driver can automaticly detect the global stucture and converts it into JSON.
+
+```javascript
+bs.set('^var', ['a', 1], {a: 1, b: [2, 3], c: {d: 4}}, function(err) {
+    bs.get('^var', ['a', 1], function(err, data) {
+        if (err) { console.log(err); return; }
+        console.log(JSON.parse(data.toString())); // {a: 1, b: [2, 3], c: {d: 4}}
+    });
+});
+```
+
+In the case when we have wrong global stucture (which differs from what we got with `set` command), `get` command will return only node value. But we can try to force JSON generation with setting second/third optional argument `forceJSON` to `true`.
+
+```javascript
+bs.get('^var', ['a', 1], true, function(err, data) {
+    // working with JSON here
 });
 ```
 
@@ -144,6 +163,8 @@ bs.set('a', ['abc', 1], 5);
 ```
 
 ### SaveObject
+
+Deprecated. Use `set` command instead which can save javascript objects into database too.
 
 Saves JSON objects in database. Set with object value type implements same behaviour. Mapping JSON to globals is similar to document storage in this paper: http://www.mgateway.com/docs/universalNoSQL.pdf pp. 19-21
 ``` JSON
