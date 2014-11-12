@@ -525,26 +525,34 @@ BoobstSocket.prototype.set = function(name, subscripts, value, callback) {
 		throw new Error("You couldn't use '\"' in variable names: " + name);
 	}
 	*/
-	var typeOfValue = typeof value;
+	// polymorphism
+	var completed
+		, self = this
+		, typeOfValue = typeof value
+		;
 	if (typeOfValue === 'function' || (typeOfValue === 'undefined' && !Array.isArray(subscripts))) { // missing subscripts attribute
 		callback = value;
 		value = subscripts;
 		subscripts = [];
 		typeOfValue = typeof value;
 	}
+	// casting
 	if (typeOfValue === 'number') { // number casts to string
 		value = value.toString();
 		typeOfValue = 'string';
-	}
-	if (value instanceof Date) { // date casts to string
+	} else if (typeOfValue === 'boolean') {
+		value = value ? '1true' : '0false';
+		typeOfValue = 'string';
+	} else if (value instanceof Date) { // date casts to string
 		value = value.toJSON();
 		typeOfValue = 'string';
 	}
+
 	if (typeOfValue === 'string' || Buffer.isBuffer(value)) {
 		if (typeOfValue === 'string' && Buffer.byteLength(value) > CACHE_MAX_SIZE || value.length > CACHE_MAX_SIZE) {
 			value = new Buffer(value);
 			callback = callback || function() {};
-			var completed = 0;
+			completed = 0;
 			for (var length = value.length, i = 0, begin = 0; begin < length; i += 1, begin += CACHE_MAX_SIZE) {
 				completed += 1;
 				this.set(name, i ? subscripts.concat(i) : subscripts, value.slice(begin, begin + CACHE_MAX_SIZE), function(err) {
@@ -575,7 +583,20 @@ BoobstSocket.prototype.set = function(name, subscripts, value, callback) {
 		// do nothing TODO function stringify option
 		return this;
 	} else if (typeOfValue === 'object') {
-		return BoobstSocket.prototype.saveObject.apply(this, arguments);
+		completed = Object.keys(value).length;
+		Object.keys(value).forEach(function(key) {
+			self.set(name, subscripts.concat(key), value[key], function(err) {
+				if (err && callback) {
+					callback(err);
+					callback = function() {};
+				}
+				completed -= 1;
+				if (completed === 0 && callback) {
+					callback.call(this, null);
+				}
+			});
+		});
+		return this;
 	} else {
 		var err = new Error('Method `set` can accept only `string`, `object`, `Buffer`, `number`, `Date` value types. And ignores `function`. Not: ' + value);
 		if (callback) {
@@ -586,6 +607,17 @@ BoobstSocket.prototype.set = function(name, subscripts, value, callback) {
 		return this;
 	}
 };
+
+
+/**
+ * Save javascript-оbject in Cache'
+ * @param {string} name имя переменной или глобала (начинается с ^)
+ * @param {Array.<string>} [subscripts]
+ * @param {Object} object js-объект
+ * @param {function(?Error)} [callback] callback
+ * @deprecated
+ */
+BoobstSocket.prototype.saveObject = BoobstSocket.prototype.set;
 
 /**
  * Returns next subscript based on current
@@ -713,59 +745,6 @@ BoobstSocket.prototype._runCommandFromQueue = function() {
 	}
 };
 
-/**
- * Save javascript-оbject in Cache'
- * @param {string} name имя переменной или глобала (начинается с ^)
- * @param {Array.<string>} [subscripts]
- * @param {Object} object js-объект
- * @param {function(?Error)} [callback] callback
- * @private
- */
-
-BoobstSocket.prototype.saveObject = function(name, subscripts, object, callback) {
-	if (typeof object === 'function' || typeof object === 'undefined') {
-		callback = object;
-		object = subscripts;
-		subscripts = [];
-	}
-	// TODO проверка на названия переменных в каше
-	this._saveObject(name, object, subscripts);
-	this.ping(function(err, data) {
-		if (!err && data === 'pong!') {
-			if (callback) {
-				callback.call(this, null);
-			}
-		} else {
-			if (callback) {
-				callback.call(this, err);
-			}
-		}
-	});
-	return this;
-};
-
-/**
- * @private
- */
-BoobstSocket.prototype._saveObject = function(variable, object, stack) {
-	var self = this;
-	Object.keys(object).forEach(function(key) {
-		switch (typeof object[key]) {
-			case 'object':
-				stack.push(key.replace(/"/g, '""'));
-				self._saveObject(variable, object[key], stack);
-				stack.pop();
-				break;
-			case 'function':
-				break;
-			case 'boolean':
-				self.set(variable, stack.concat(key), object[key] ? '1true' : '0false');
-				break;
-			default:
-				self.set(variable, stack.concat(key), object[key]);
-		}
-	});
-};
 //--------------------------------------------------------------------------
 function isValidCacheVar(name) {
 	/* TODO fix it
