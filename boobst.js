@@ -515,7 +515,7 @@ BoobstSocket.prototype.setEncoding = function(value, callback) {
  * Установить значение переменной или глобала
  * @param {string} name имя переменной или глобала (начинается с ^)
  * @param {string|Buffer|Array<string>} [subscripts]
- * @param {string|Buffer|function} value значение переменной, меньше 32к //TODO 32kb
+ * @param {string|Buffer|function} value значение переменной
  * @param {?function(this:boobst.BoobstSocket, (null|Error), string)} [callback] callback
  * @return {boobst.BoobstSocket|BoobstSocket}
  */
@@ -532,8 +532,12 @@ BoobstSocket.prototype.set = function(name, subscripts, value, callback) {
 		subscripts = [];
 		typeOfValue = typeof value;
 	}
-	if (typeOfValue === 'number') {
+	if (typeOfValue === 'number') { // number casts to string
 		value = value.toString();
+		typeOfValue = 'string';
+	}
+	if (value instanceof Date) { // date casts to string
+		value = value.toJSON();
 		typeOfValue = 'string';
 	}
 	if (typeOfValue === 'string' || Buffer.isBuffer(value)) {
@@ -568,12 +572,12 @@ BoobstSocket.prototype.set = function(name, subscripts, value, callback) {
 			return this;
 		}
 	} else if (typeOfValue === 'function') {
-		// do nothing
+		// do nothing TODO function stringify option
 		return this;
 	} else if (typeOfValue === 'object') {
 		return BoobstSocket.prototype.saveObject.apply(this, arguments);
 	} else {
-		var err = new Error('Method `set` can accept only `string`, `object`, `Buffer`, `number` value types. And ignores `function`. Not: ' + value);
+		var err = new Error('Method `set` can accept only `string`, `object`, `Buffer`, `number`, `Date` value types. And ignores `function`. Not: ' + value);
 		if (callback) {
 			callback(err);
 		} else {
