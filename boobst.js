@@ -94,7 +94,6 @@ function onClose(transmittionErr) {
 		} else {
 			this._connectionTimeout += 1000;
 		}
-
 		setTimeout(function() {
 			this.connect();
 		}.bind(this), this._connectionTimeout);
@@ -127,6 +126,7 @@ function onData(data) {
 			// do nothing, this error should be caught by onError event
 			break;
 		case BCMD.HI:
+			this.killme = false;
 			this.onDataGreeting(data);
 			break;
 		default:
@@ -178,6 +178,7 @@ var BoobstSocket = function(options) {
 	}
 	this.command = BCMD.HI;
 	this.connected = false;
+	this.killme = false;
 	/**
 	 * Connection socket
 	 * @type {net.Socket}
@@ -400,6 +401,7 @@ BoobstSocket.prototype._tryCommand = function(commandObject) { // попытат
 				this.socket.write('Z ' + commandObject.name + EOL);
 				break;
 			case BCMD.DISCONNECT:
+				this.killme = true; // this is state to disconnect gracefully
 				this.command = BCMD.HI; // we are ready to the next greeting from server
 				this.socket.end();
 				break;
@@ -538,7 +540,9 @@ BoobstSocket.prototype.set = function(name, subscripts, value, callback) {
 	}
 
 	// casting
-	if (typeOfValue === 'number') { // number casts to string
+	if (typeOfValue === 'undefined' || value === null) {
+		return this;
+	} else if (typeOfValue === 'number') { // number casts to string
 		value = value.toString();
 		typeOfValue = 'string';
 	} else if (typeOfValue === 'boolean') {
@@ -730,7 +734,6 @@ BoobstSocket.prototype.ping = function(callback) {
  * @param {function(this:boobst.BoobstSocket, (null|Error))} [callback] callback
  */
 BoobstSocket.prototype.disconnect = function(callback) {
-	this.killme = true;
 	this._tryCommand({cmd: BCMD.DISCONNECT, callback: callback});
 	return this;
 };
