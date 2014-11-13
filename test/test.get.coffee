@@ -4,6 +4,8 @@
 
 ###global describe, beforeEach, afterEach, it###
 
+'use strict'
+
 assert = require 'assert'
 boobst = require '../boobst'
 BoobstSocket = boobst.BoobstSocket
@@ -49,6 +51,12 @@ describe 'get', () ->
             callback()
         else
           callback()
+
+    it 'sould return error if we don\'t have data in global', (done) ->
+      bs.get GLOBAL, [], (err, data) ->
+        assert.notEqual err, null
+        assert.equal data, undefined
+        done()
 
     it 'should return node data if we have $data(node)=11', (done) ->
       fulfill true, () ->

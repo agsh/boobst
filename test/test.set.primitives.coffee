@@ -1,3 +1,5 @@
+'use strict'
+
 assert = require 'assert'
 boobst = require '../boobst'
 BoobstSocket = boobst.BoobstSocket
@@ -60,6 +62,19 @@ describe 'set.primitives', () ->
       .get GLOBAL, (err, data) ->
         assert.equal err, null
         assert.equal data, '0false'
+        done()
+
+  describe '#set null/undefined', () ->
+    it 'souldn\'t save null', (done) ->
+      bs.set GLOBAL, null
+        .get GLOBAL, (err, data) ->
+          console.log(err, data)
+          assert.notEqual err, null
+          done()
+    it 'souldn\'t save undefined', (done) ->
+      bs.set GLOBAL, undefined
+      .get GLOBAL, (err) ->
+        assert.notEqual err, null
         done()
 
   describe '#set array', () ->

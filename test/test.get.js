@@ -8,6 +8,7 @@
 /*global describe, beforeEach, afterEach, it */
 
 (function() {
+  'use strict';
   var BoobstSocket, GLOBAL, assert, boobst;
 
   assert = require('assert');
@@ -22,7 +23,6 @@
     var bs;
     this.timeout(1000);
     bs = new BoobstSocket(require('./test.config'));
-    bs.on('debug', console.log);
     beforeEach(function(done) {
       return bs.connect(function(err) {
         if (err) {
@@ -68,6 +68,13 @@
           }
         });
       };
+      it('sould return error if we don\'t have data in global', function(done) {
+        return bs.get(GLOBAL, [], function(err, data) {
+          assert.notEqual(err, null);
+          assert.equal(data, void 0);
+          return done();
+        });
+      });
       it('should return node data if we have $data(node)=11', function(done) {
         return fulfill(true, function() {
           return bs.get(GLOBAL, [], function(err, data) {
