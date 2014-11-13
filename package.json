@@ -1,33 +1,33 @@
 {
-	"name": "boobst",
-	"version": "0.8.11",
-	"author": "Andrew D.Laptev <a.d.laptev@gmail.com>",
-	"description": "Simple Node.js Caché driver",
-	"main": "./boobst",
-	"scripts": {
-		"test": "mocha"
-	},
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/agsh/boobst.git"
-	},
-	"keywords": [
-		"M",
-		"MUMPS",
-		"database",
-		"hierarchical database",
-		"databases",
-		"NoSQL",
-		"intersystems",
-		"cache",
-		"cache'",
-		"driver"
-	],
-	"license": "MIT",
-	"engines": {
-		"node": ">=0.6"
-	},
-	"devDependencies": {
-		"mocha": "*"
-	}
+  "name": "boobst",
+  "version": "0.8.12",
+  "author": "Andrew D.Laptev <a.d.laptev@gmail.com>",
+  "description": "Simple Node.js Caché driver",
+  "main": "./boobst",
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/agsh/boobst.git"
+  },
+  "keywords": [
+    "M",
+    "MUMPS",
+    "database",
+    "hierarchical database",
+    "databases",
+    "NoSQL",
+    "intersystems",
+    "cache",
+    "cache'",
+    "driver"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=0.6"
+  },
+  "devDependencies": {
+    "mocha": "^2.0.1"
+  }
 }
