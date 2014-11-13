@@ -42,7 +42,7 @@ const
 	EOL = ' ' + String.fromCharCode(0) // TODO избавиться от лишнего байта в s input=$e(input,1,$l(input)-1)
 	, EON = String.fromCharCode(1)
 	, VERSION = 8
-	, VALID_CACHE_VAR_RE = /^\^?%?[\-A-Z\.a-z]+[\w\d]*(\(("[A-Za-z_\-\.\+\\/0-9]+"|\d)(,("[A-Za-z_\-\.\+\\/0-9]+"|\d))*\))?$/
+	// , VALID_CACHE_VAR_RE = /^\^?%?[\-A-Z\.a-z]+[\w\d]*(\(("[A-Za-z_\-\.\+\\/0-9]+"|\d)(,("[A-Za-z_\-\.\+\\/0-9]+"|\d))*\))?$/
 	, CACHE_MAX_SIZE = 32754,
 	/**
 	 * @enum {number}
@@ -542,7 +542,7 @@ BoobstSocket.prototype.setEncoding = function(value, callback) {
  * Установить значение переменной или глобала
  * @param {string} name имя переменной или глобала (начинается с ^)
  * @param {string|Buffer|Array&lt;string>} [subscripts]
- * @param {string|Buffer|function} value значение переменной, меньше 32к //TODO 32kb
+ * @param {string|Buffer|function} value значение переменной
  * @param {?function(this:boobst.BoobstSocket, (null|Error), string)} [callback] callback
  * @return {boobst.BoobstSocket|BoobstSocket}
  */
@@ -552,22 +552,35 @@ BoobstSocket.prototype.set = function(name, subscripts, value, callback) {
 		throw new Error("You couldn't use '\"' in variable names: " + name);
 	}
 	*/
-	var typeOfValue = typeof value;
-	if (typeOfValue === 'function' || (typeOfValue === 'undefined' &amp;&amp; !Array.isArray(subscripts))) { // missing subscripts attribute
+	// polymorphism
+	var completed
+		, self = this
+		, typeOfValue = typeof value
+		;
+	if (typeOfValue === 'function' || typeOfValue === 'undefined') { // missing subscripts attribute
 		callback = value;
 		value = subscripts;
 		subscripts = [];
 		typeOfValue = typeof value;
 	}
-	if (typeOfValue === 'number') {
+
+	// casting
+	if (typeOfValue === 'number') { // number casts to string
 		value = value.toString();
 		typeOfValue = 'string';
+	} else if (typeOfValue === 'boolean') {
+		value = value ? '1true' : '0false';
+		typeOfValue = 'string';
+	} else if (value instanceof Date) { // date casts to string
+		value = value.toJSON();
+		typeOfValue = 'string';
 	}
+
 	if (typeOfValue === 'string' || Buffer.isBuffer(value)) {
 		if (typeOfValue === 'string' &amp;&amp; Buffer.byteLength(value) > CACHE_MAX_SIZE || value.length > CACHE_MAX_SIZE) {
 			value = new Buffer(value);
 			callback = callback || function() {};
-			var completed = 0;
+			completed = 0;
 			for (var length = value.length, i = 0, begin = 0; begin &lt; length; i += 1, begin += CACHE_MAX_SIZE) {
 				completed += 1;
 				this.set(name, i ? subscripts.concat(i) : subscripts, value.slice(begin, begin + CACHE_MAX_SIZE), function(err) {
@@ -595,12 +608,25 @@ BoobstSocket.prototype.set = function(name, subscripts, value, callback) {
 			return this;
 		}
 	} else if (typeOfValue === 'function') {
-		// do nothing
+		// do nothing TODO function stringify option
 		return this;
-	} else if (typeOfValue === 'object') {
-		return BoobstSocket.prototype.saveObject.apply(this, arguments);
+	} else if (typeOfValue === 'object') { // object or array
+		completed = Object.keys(value).length;
+		Object.keys(value).forEach(function(key) {
+			self.set(name, subscripts.concat(key), value[key], function(err) {
+				if (err &amp;&amp; callback) {
+					callback(err);
+					callback = function() {};
+				}
+				completed -= 1;
+				if (completed === 0 &amp;&amp; callback) {
+					callback.call(this, null);
+				}
+			});
+		});
+		return this;
 	} else {
-		var err = new Error('Method `set` can accept only `string`, `object`, `Buffer`, `number` value types. And ignores `function`. Not: ' + value);
+		var err = new Error('Method `set` can accept only `string`, `object`, `Buffer`, `number`, `Date` value types. And ignores `function`. Not: ' + value);
 		if (callback) {
 			callback(err);
 		} else {
@@ -609,6 +635,17 @@ BoobstSocket.prototype.set = function(name, subscripts, value, callback) {
 		return this;
 	}
 };
+
+
+/**
+ * Save javascript-оbject in Cache'
+ * @param {string} name имя переменной или глобала (начинается с ^)
+ * @param {Array.&lt;string>} [subscripts]
+ * @param {Object} object js-объект
+ * @param {function(?Error)} [callback] callback
+ * @deprecated
+ */
+BoobstSocket.prototype.saveObject = BoobstSocket.prototype.set;
 
 /**
  * Returns next subscript based on current
@@ -736,59 +773,6 @@ BoobstSocket.prototype._runCommandFromQueue = function() {
 	}
 };
 
-/**
- * Save javascript-оbject in Cache'
- * @param {string} name имя переменной или глобала (начинается с ^)
- * @param {Array.&lt;string>} [subscripts]
- * @param {Object} object js-объект
- * @param {function(?Error)} [callback] callback
- * @private
- */
-
-BoobstSocket.prototype.saveObject = function(name, subscripts, object, callback) {
-	if (typeof object === 'function' || typeof object === 'undefined') {
-		callback = object;
-		object = subscripts;
-		subscripts = [];
-	}
-	// TODO проверка на названия переменных в каше
-	this._saveObject(name, object, subscripts);
-	this.ping(function(err, data) {
-		if (!err &amp;&amp; data === 'pong!') {
-			if (callback) {
-				callback.call(this, null);
-			}
-		} else {
-			if (callback) {
-				callback.call(this, err);
-			}
-		}
-	});
-	return this;
-};
-
-/**
- * @private
- */
-BoobstSocket.prototype._saveObject = function(variable, object, stack) {
-	var self = this;
-	Object.keys(object).forEach(function(key) {
-		switch (typeof object[key]) {
-			case 'object':
-				stack.push(key.replace(/"/g, '""'));
-				self._saveObject(variable, object[key], stack);
-				stack.pop();
-				break;
-			case 'function':
-				break;
-			case 'boolean':
-				self.set(variable, stack.concat(key), object[key] ? '1true' : '0false');
-				break;
-			default:
-				self.set(variable, stack.concat(key), object[key]);
-		}
-	});
-};
 //--------------------------------------------------------------------------
 function isValidCacheVar(name) {
 	/* TODO fix it
@@ -831,7 +815,7 @@ exports.BoobstSocket = BoobstSocket;</code></pre>
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha3</a> on Tue Nov 11 2014 12:54:00 GMT+0300 (MSK)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha3</a> on Wed Nov 12 2014 20:02:44 GMT+0300 (MSK)
 </footer>
 
 <script> prettyPrint(); </script>
