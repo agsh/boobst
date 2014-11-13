@@ -26,7 +26,7 @@ describe('set', function() {
 	});
 
 	afterEach(function(done) {
-		bs.kill(GLOBAL, function(){
+		bs.kill(GLOBAL, function() {
 			bs.disconnect(function() {
 				done();
 			});

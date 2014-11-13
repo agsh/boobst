@@ -37,6 +37,7 @@
       return it('should properly gave us hello or disallowed', function(done) {
         return bs.xecute('write "hello"', function(err, data) {
           assert.equal(err, null);
+          data = data.toString();
           assert.ok(data === 'hello' || data === 'disallowed');
           return done();
         });

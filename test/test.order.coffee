@@ -10,7 +10,7 @@ BoobstSocket = boobst.BoobstSocket
 
 GLOBAL = '^test1';
 
-describe 'set', () ->
+describe 'order', () ->
   this.timeout 15000
   bs = new BoobstSocket(require './test.config')
 

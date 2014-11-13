@@ -14,7 +14,7 @@ describe 'get', () ->
   this.timeout 1000
   bs = new BoobstSocket(require './test.config')
 
-  bs.on('debug', console.log); # uncomment for debug messages
+  # bs.on('debug', console.log); # uncomment for debug messages
 
   beforeEach (done) ->
     bs.connect (err) ->
