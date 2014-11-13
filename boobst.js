@@ -530,12 +530,13 @@ BoobstSocket.prototype.set = function(name, subscripts, value, callback) {
 		, self = this
 		, typeOfValue = typeof value
 		;
-	if (typeOfValue === 'function' || (typeOfValue === 'undefined' && !Array.isArray(subscripts))) { // missing subscripts attribute
+	if (typeOfValue === 'function' || typeOfValue === 'undefined') { // missing subscripts attribute
 		callback = value;
 		value = subscripts;
 		subscripts = [];
 		typeOfValue = typeof value;
 	}
+
 	// casting
 	if (typeOfValue === 'number') { // number casts to string
 		value = value.toString();
@@ -582,7 +583,7 @@ BoobstSocket.prototype.set = function(name, subscripts, value, callback) {
 	} else if (typeOfValue === 'function') {
 		// do nothing TODO function stringify option
 		return this;
-	} else if (typeOfValue === 'object') {
+	} else if (typeOfValue === 'object') { // object or array
 		completed = Object.keys(value).length;
 		Object.keys(value).forEach(function(key) {
 			self.set(name, subscripts.concat(key), value[key], function(err) {
