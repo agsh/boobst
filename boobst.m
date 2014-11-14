@@ -272,7 +272,7 @@ numberTest(global)
 create32kb(global)	
 	new key
 	set key = ""
-	write """"_@$na(@global)
+	write """"_$replace(@$na(@global),"""","\""")
 	for  set key = $order(@$na(@global@(key))) quit:key=""  do
 	.	write $replace(@$na(@global@(key)),"""","\""")
 	write """"
