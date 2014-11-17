@@ -6,7 +6,7 @@ BoobstSocket = boobst.BoobstSocket
 
 GLOBAL = '^testObject';
 
-describe 'set.primitives', () ->
+describe 'set data', () ->
   this.timeout 1000
   bs = new BoobstSocket(require './test.config')
 
@@ -23,7 +23,8 @@ describe 'set.primitives', () ->
       bs.disconnect () ->
         done()
 
-  describe '#set number', () ->
+  describe 'set primitives', () ->
+
     it 'should save numbers', (done) ->
       value = 5;
       bs.set GLOBAL, value
@@ -32,7 +33,6 @@ describe 'set.primitives', () ->
           assert.equal value, data
           done()
 
-  describe '#set date', () ->
     it 'should save dates', (done) ->
       value = new Date()
       bs.set GLOBAL, value
@@ -41,7 +41,6 @@ describe 'set.primitives', () ->
           assert.equal value.toString(), new Date(data).toString()
           done()
 
-  describe '#set string', () ->
     it 'should save strings', (done) ->
       value = 'string'
       bs.set GLOBAL, value
@@ -50,34 +49,33 @@ describe 'set.primitives', () ->
           assert.equal value, data
           done()
 
-  describe '#set boolean', () ->
-    it 'should save true value', (done) ->
+    it 'should save true boolean value', (done) ->
       bs.set GLOBAL, true
         .get GLOBAL, (err, data) ->
           assert.equal err, null
           assert.equal data, '1true'
           done()
-    it 'should save false value', (done) ->
+
+    it 'should save false boolean value', (done) ->
       bs.set GLOBAL, false
       .get GLOBAL, (err, data) ->
         assert.equal err, null
         assert.equal data, '0false'
         done()
 
-  describe '#set null/undefined', () ->
     it 'souldn\'t save null', (done) ->
       bs.set GLOBAL, null
         .get GLOBAL, (err, data) ->
-          console.log(err, data)
           assert.notEqual err, null
           done()
+
     it 'souldn\'t save undefined', (done) ->
       bs.set GLOBAL, undefined
       .get GLOBAL, (err) ->
         assert.notEqual err, null
         done()
 
-  describe '#set array', () ->
+  describe 'set complex structures', () ->
     it 'should save array as an object', (done) ->
       value = [1, 2, 3]
       bs.set GLOBAL, value
@@ -87,7 +85,6 @@ describe 'set.primitives', () ->
         assert.deepEqual JSON.parse(data.toString()), value
         done()
 
-  describe '#set object', () ->
     it 'should save all nested values properly', (done) ->
       value = {
         number: 42
@@ -107,7 +104,40 @@ describe 'set.primitives', () ->
           assert.deepEqual JSON.parse(data.toString()), value
           done()
 
+  describe 'inline/callback set-get chaining', () ->
+    it 'should set a global without subscripts inline and then get it', (done) ->
+      value = 'VALUE'
+      bs.set GLOBAL, value
+        .get GLOBAL, (err, data) ->
+          assert.equal err, null
+          assert.equal value, data
+          done();
 
+    it 'should set a global without subscripts with a callback and then get it', (done) ->
+      value = 'VALUE'
+      bs.set GLOBAL, value, (err) ->
+        assert.equal err, null
+        bs.get GLOBAL, (err, data) ->
+          assert.equal err, null
+          assert.equal value, data
+          done()
+
+    it 'should set a global with subscripts inline and then get it', (done) ->
+      value = 'VALUE'
+      bs.set GLOBAL, ['a', 1], value
+        .get GLOBAL, ['a', 1], (err, data) ->
+          assert.equal err, null
+          assert.equal value, data
+          done()
+
+    it 'should set a global with subscripts with a callback and then get it', (done) ->
+      value = 'VALUE';
+      bs.set GLOBAL, ['a', 1], value, (err) ->
+        assert.equal err, null
+        bs.get GLOBAL, ['a', 1], (err, data) ->
+          assert.equal err, null
+          assert.equal value, data
+          done()
   ###
   describe '#set', () ->
     it 'shouldn\'t save function', (done) ->
