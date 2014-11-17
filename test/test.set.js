@@ -11,7 +11,7 @@
 
   GLOBAL = '^testObject';
 
-  describe('set data', function() {
+  describe('set', function() {
     var bs;
     this.timeout(1000);
     bs = new BoobstSocket(require('./test.config'));
@@ -123,10 +123,10 @@
         });
       });
     });
-    return describe('inline/callback set-get chaining', function() {
+    describe('inline/callback set-get chaining', function() {
+      var value;
+      value = 'VALUE';
       it('should set a global without subscripts inline and then get it', function(done) {
-        var value;
-        value = 'VALUE';
         return bs.set(GLOBAL, value).get(GLOBAL, function(err, data) {
           assert.equal(err, null);
           assert.equal(value, data);
@@ -134,8 +134,6 @@
         });
       });
       it('should set a global without subscripts with a callback and then get it', function(done) {
-        var value;
-        value = 'VALUE';
         return bs.set(GLOBAL, value, function(err) {
           assert.equal(err, null);
           return bs.get(GLOBAL, function(err, data) {
@@ -146,8 +144,6 @@
         });
       });
       it('should set a global with subscripts inline and then get it', function(done) {
-        var value;
-        value = 'VALUE';
         return bs.set(GLOBAL, ['a', 1], value).get(GLOBAL, ['a', 1], function(err, data) {
           assert.equal(err, null);
           assert.equal(value, data);
@@ -155,13 +151,58 @@
         });
       });
       return it('should set a global with subscripts with a callback and then get it', function(done) {
-        var value;
-        value = 'VALUE';
         return bs.set(GLOBAL, ['a', 1], value, function(err) {
           assert.equal(err, null);
           return bs.get(GLOBAL, ['a', 1], function(err, data) {
             assert.equal(err, null);
             assert.equal(value, data);
+            return done();
+          });
+        });
+      });
+    });
+    return describe('different arguments in `set` method', function() {
+      var array, value;
+      value = 'VALUE';
+      array = ['a', 1];
+      it('works with two-arguments form', function(done) {
+        return bs.set(GLOBAL, value).get(GLOBAL, function(err, data) {
+          assert.equal(err, null);
+          assert.equal(value, data);
+          return done();
+        });
+      });
+      it('works with three-arguments form without callback', function(done) {
+        return bs.set(GLOBAL, array, value).get(GLOBAL, array, function(err, data) {
+          assert.equal(err, null);
+          assert.equal(value, data);
+          return done();
+        });
+      });
+      it('works with three-arguments form without callback even the value is array', function(done) {
+        return bs.set(GLOBAL, array, array).get(GLOBAL, array, function(err, data) {
+          assert.equal(err, null);
+          assert.deepEqual(array, JSON.parse(data.toString()));
+          return done();
+        });
+      });
+      it('works with three-arguments form with callback even the value is array', function(done) {
+        return bs.set(GLOBAL, array, function(err) {
+          assert.equal(err, null);
+          return bs.get(GLOBAL, function(err, data) {
+            console.log(err);
+            assert.equal(err, null);
+            assert.deepEqual(array, JSON.parse(data.toString()));
+            return done();
+          });
+        });
+      });
+      return it('works with four-arguments form with callback even the value is array', function(done) {
+        return bs.set(GLOBAL, array, array, function(err) {
+          assert.equal(err, null);
+          return bs.get(GLOBAL, array, function(err, data) {
+            assert.equal(err, null);
+            assert.deepEqual(array, JSON.parse(data.toString()));
             return done();
           });
         });

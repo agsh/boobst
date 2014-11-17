@@ -6,7 +6,7 @@ BoobstSocket = boobst.BoobstSocket
 
 GLOBAL = '^testObject';
 
-describe 'set data', () ->
+describe 'set', () ->
   this.timeout 1000
   bs = new BoobstSocket(require './test.config')
 
@@ -76,6 +76,7 @@ describe 'set data', () ->
         done()
 
   describe 'set complex structures', () ->
+
     it 'should save array as an object', (done) ->
       value = [1, 2, 3]
       bs.set GLOBAL, value
@@ -105,8 +106,9 @@ describe 'set data', () ->
           done()
 
   describe 'inline/callback set-get chaining', () ->
+    value = 'VALUE'
+
     it 'should set a global without subscripts inline and then get it', (done) ->
-      value = 'VALUE'
       bs.set GLOBAL, value
         .get GLOBAL, (err, data) ->
           assert.equal err, null
@@ -114,7 +116,6 @@ describe 'set data', () ->
           done();
 
     it 'should set a global without subscripts with a callback and then get it', (done) ->
-      value = 'VALUE'
       bs.set GLOBAL, value, (err) ->
         assert.equal err, null
         bs.get GLOBAL, (err, data) ->
@@ -123,7 +124,6 @@ describe 'set data', () ->
           done()
 
     it 'should set a global with subscripts inline and then get it', (done) ->
-      value = 'VALUE'
       bs.set GLOBAL, ['a', 1], value
         .get GLOBAL, ['a', 1], (err, data) ->
           assert.equal err, null
@@ -131,13 +131,55 @@ describe 'set data', () ->
           done()
 
     it 'should set a global with subscripts with a callback and then get it', (done) ->
-      value = 'VALUE';
       bs.set GLOBAL, ['a', 1], value, (err) ->
         assert.equal err, null
         bs.get GLOBAL, ['a', 1], (err, data) ->
           assert.equal err, null
           assert.equal value, data
           done()
+
+  describe 'different arguments in `set` method', () ->
+    value = 'VALUE'
+    array = ['a', 1]
+
+    it 'works with two-arguments form', (done) ->
+      bs.set GLOBAL, value
+        .get GLOBAL, (err, data) ->
+          assert.equal err, null
+          assert.equal value, data
+          done()
+
+    it 'works with three-arguments form without callback', (done) ->
+      bs.set GLOBAL, array, value
+      .get GLOBAL, array, (err, data) ->
+        assert.equal err, null
+        assert.equal value, data
+        done()
+
+    it 'works with three-arguments form without callback even the value is array', (done) ->
+      bs.set GLOBAL, array, array
+      .get GLOBAL, array, (err, data) ->
+        assert.equal err, null
+        assert.deepEqual array, JSON.parse data.toString()
+        done()
+
+    it 'works with three-arguments form with callback even the value is array', (done) ->
+      bs.set GLOBAL, array, (err) ->
+        assert.equal err, null
+        bs.get GLOBAL, (err, data) ->
+          console.log err
+          assert.equal err, null
+          assert.deepEqual array, JSON.parse data.toString()
+          done()
+
+    it 'works with four-arguments form with callback even the value is array', (done) ->
+      bs.set GLOBAL, array, array, (err) ->
+        assert.equal err, null
+        bs.get GLOBAL, array, (err, data) ->
+          assert.equal err, null
+          assert.deepEqual array, JSON.parse data.toString()
+          done()
+
   ###
   describe '#set', () ->
     it 'shouldn\'t save function', (done) ->
