@@ -65,7 +65,7 @@ describe 'set', () ->
 
     it 'souldn\'t save null', (done) ->
       bs.set GLOBAL, null
-        .get GLOBAL, (err, data) ->
+        .get GLOBAL, (err) ->
           assert.notEqual err, null
           done()
 
@@ -100,10 +100,28 @@ describe 'set', () ->
       }
       bs.set GLOBAL, value
         .get GLOBAL, (err, data) ->
-          #console.log(data.toString())
           assert.equal err, null
           assert.deepEqual JSON.parse(data.toString()), value
           done()
+
+    it 'should save deep nested object properly', (done) ->
+      value = {
+        a: {
+          b: {
+            c: {
+              d: {
+                value: 'value'
+              }
+            }
+          }
+        }
+      }
+      bs.set GLOBAL, value
+      .get GLOBAL, (err, data) ->
+        #console.log(data.toString())
+        assert.equal err, null
+        assert.deepEqual JSON.parse(data.toString()), value
+        done()
 
   describe 'inline/callback set-get chaining', () ->
     value = 'VALUE'
@@ -178,6 +196,15 @@ describe 'set', () ->
         bs.get GLOBAL, array, (err, data) ->
           assert.equal err, null
           assert.deepEqual array, JSON.parse data.toString()
+          done()
+
+  describe 'setting large, binary and screening values', () ->
+    it 'should save and restore screening values', (done) ->
+      value = '"\\'
+      bs.set GLOBAL, value
+        .get GLOBAL, (err, data) ->
+          assert.equal err, null
+          assert.equal value, data
           done()
 
   ###

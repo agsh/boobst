@@ -76,7 +76,7 @@
         });
       });
       it('souldn\'t save null', function(done) {
-        return bs.set(GLOBAL, null).get(GLOBAL, function(err, data) {
+        return bs.set(GLOBAL, null).get(GLOBAL, function(err) {
           assert.notEqual(err, null);
           return done();
         });
@@ -98,7 +98,7 @@
           return done();
         });
       });
-      return it('should save all nested values properly', function(done) {
+      it('should save all nested values properly', function(done) {
         var value;
         value = {
           number: 42,
@@ -115,6 +115,25 @@
               b: '2'
             }
           ]
+        };
+        return bs.set(GLOBAL, value).get(GLOBAL, function(err, data) {
+          assert.equal(err, null);
+          assert.deepEqual(JSON.parse(data.toString()), value);
+          return done();
+        });
+      });
+      return it('should save deep nested object properly', function(done) {
+        var value;
+        value = {
+          a: {
+            b: {
+              c: {
+                d: {
+                  value: 'value'
+                }
+              }
+            }
+          }
         };
         return bs.set(GLOBAL, value).get(GLOBAL, function(err, data) {
           assert.equal(err, null);
@@ -161,7 +180,7 @@
         });
       });
     });
-    return describe('different arguments in `set` method', function() {
+    describe('different arguments in `set` method', function() {
       var array, value;
       value = 'VALUE';
       array = ['a', 1];
@@ -205,6 +224,17 @@
             assert.deepEqual(array, JSON.parse(data.toString()));
             return done();
           });
+        });
+      });
+    });
+    return describe('setting large, binary and screening values', function() {
+      return it('should save and restore screening values', function(done) {
+        var value;
+        value = '"\\';
+        return bs.set(GLOBAL, value).get(GLOBAL, function(err, data) {
+          assert.equal(err, null);
+          assert.equal(value, data);
+          return done();
         });
       });
     });
