@@ -280,7 +280,7 @@ create32kb(global)
 	;
 makeValue(val)
 	; if val = +val quit val
-	if val?1.N0.1".".N0.1(1"e+",1"e-".N) quit val
+	if val?1(1"0",1(1"1",1"2",1"3",1"4",1"5",1"6",1"7",1"8",1"9").N)0.1(1"."1.N)0.1(1"e+",1"e-".N) quit val
 	if val = "1true" quit "true"
 	if val = "0false" quit "false"
 	set val = $$encodeJSON(val)
