@@ -228,12 +228,23 @@
       });
     });
     return describe('setting large, binary and screening values', function() {
-      return it('should save and restore screening values', function(done) {
+      it('should save and restore screening values', function(done) {
         var value;
         value = '"\\';
         return bs.set(GLOBAL, value).get(GLOBAL, function(err, data) {
           assert.equal(err, null);
           assert.equal(value, data);
+          return done();
+        });
+      });
+      return it('should save string 65536 bytes length', function(done) {
+        var value;
+        value = new Array(4 * 1024 + 1).join('0123456789abcdef');
+        return bs.set(GLOBAL, ['a'], value).get(GLOBAL, ['a'], function(err, data) {
+          assert.equal(err, null);
+          console.log(value.length);
+          console.log(data.toString().length);
+          assert.equal(value, data.toString());
           return done();
         });
       });
