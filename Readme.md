@@ -149,8 +149,8 @@ Considering that commands are sending to the database in series, we can write co
 
 ``` Javascript
 bs.set('a', '2');
-bs.set('b', '2');
-bs.execute('multAB^test' /**program body: "w a*b q"*/, function(err, data) {
+  .set('b', '2');
+  .execute('multAB^test' /**program body: "w a*b q"*/, function(err, data) {
     if (err) { console.log(err); return; }
     console.log(data === '4' ? 'successfully executed': 'something wrong');
 });
