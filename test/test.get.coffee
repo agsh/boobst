@@ -21,7 +21,9 @@ describe 'get', () ->
   beforeEach (done) ->
     bs.connect (err) ->
       throw err if err
-      done()
+      bs.kill GLOBAL, (err) ->
+        throw err if err
+        done()
 
   afterEach (done) ->
     bs.kill GLOBAL, (err) ->
