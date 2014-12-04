@@ -1,10 +1,9 @@
 /**
  * Boobst module (boobst.js)
- * Маленький клиент для работы с СУБД Cache'
- * Для отладки используйте метод .emit('debug')
+ * A tiny database driver for DBMS Cache'
  * @author Andrew D. Laptev <a.d.laptev@gmail.com>
- * @version 0.8.4
- * @license AGPL
+ * @version 0.8.14
+ * @license MIT
  **/
 
 var net = require('net')
@@ -44,8 +43,7 @@ const
  * @private
  */
 function onConnection() {
-	// в новых версиях протокола при коннекте сервер отдаёт приветствие
-	// так что callback'и теперь вызываются при обработке команды BCMD.HI
+	// unused event handler cause on connection server first of all sends greeting BCMD.HI to client
 }
 
 /**
@@ -192,7 +190,7 @@ var BoobstSocket = function(options) {
 	this.socket.on('error', onError.bind(this));
 };
 
-// наследуемся от events.EventEmitter
+// events.EventEmitter inheritance
 util.inherits(BoobstSocket, events.EventEmitter);
 
 /**
@@ -224,10 +222,10 @@ BoobstSocket.prototype.connect = function(callback) {
 /**
  * Common event handler
  * @private
- * @param {Buffer} data     data chunk
+ * @param {Buffer} data binary data chunk
  */
 BoobstSocket.prototype.onDataCommon = function(data) {
-	// проверяем, является ли этот чанк последним куском передаваемых данных
+	// check if this chunk is the last one
 	// it must have \6\6 characters at the end
 	if ((data.length > 1) && (data[data.length - 1] === 6) && (data[data.length - 2] === 6)) {
 		if (this.out && (this.command === BCMD.EXECUTE || this.command === BCMD.XECUTE)){ // if we're writing into stream
@@ -258,7 +256,7 @@ BoobstSocket.prototype.onDataCommon = function(data) {
 /**
  * Connect event handler
  * @private
- * @param {Buffer} data     greeting
+ * @param {Buffer} data greeting
  */
 BoobstSocket.prototype.onDataGreeting = function(data) {
 	this.emit('debug', 'connected');
@@ -273,9 +271,9 @@ BoobstSocket.prototype.onDataGreeting = function(data) {
 		return;
 	}
 
-	// работаем с нужной нам версией протокола
+	// working with properly protocol version
 	this.id = parseInt(dataStr[1], 10);
-	// если при подключении мы находимся в отличной области, первым делом переключимся в нужную
+	// if we're in the different namespace when connected just switch to the right one
 	if (this.ns) {
 		if (this.ns !== dataStr[2]) {
 			this.queue.unshift({
@@ -299,7 +297,7 @@ BoobstSocket.prototype.onDataGreeting = function(data) {
 };
 
 /**
- * Обработчик данных, пришедших от сервера при смене namespace
+ * Namespace change event handler
  * @private
  * @param {buffer.Buffer} data информация о смене
  */
@@ -514,10 +512,10 @@ BoobstSocket.prototype.setEncoding = function(value, callback) {
 };
 
 /**
- * Установить значение переменной или глобала
- * @param {string} name имя переменной или глобала (начинается с ^)
+ * Set the value of variable or global
+ * @param {string} name variable or global name (global name starts with `^`)
  * @param {string|Buffer|Array<string>} [subscripts]
- * @param {string|Buffer|function} value значение переменной
+ * @param {string|Buffer|function} value variable value
  * @param {?function(this:boobst.BoobstSocket, (null|Error), string)} [callback] callback
  * @return {boobst.BoobstSocket|BoobstSocket}
  */
@@ -616,9 +614,9 @@ BoobstSocket.prototype.set = function(name, subscripts, value, callback) {
 
 /**
  * Save javascript-оbject in Cache'
- * @param {string} name имя переменной или глобала (начинается с ^)
+ * @param {string} variable or global name (global name starts with `^`)
  * @param {Array.<string>} [subscripts]
- * @param {Object} object js-объект
+ * @param {Object} object javascript-object
  * @param {function(?Error)} [callback] callback
  * @deprecated
  */
@@ -642,7 +640,7 @@ BoobstSocket.prototype.order = BoobstSocket.prototype.next = function(name, subs
 
 /**
  * Changes namespace
- * @param {string} name Существующий namespace
+ * @param {string} name existing namespace
  * @param {function} [callback] callback
  */
 BoobstSocket.prototype.zn = function(name, callback) {
@@ -690,8 +688,8 @@ BoobstSocket.prototype.kill = function(name, subscripts, callback) {
 
 /**
  * Send binary data
- * @param {string} uri uri format is: file://<file_path> или global://<global_name_w/o_^>
- * @param {Stream} stream поток данных
+ * @param {string} uri uri format is: file://<file_path> or global://<global_name_w/o_^>
+ * @param {Stream} stream data stream
  * @param {function(this:boobst.BoobstSocket, (null|Error))} [callback] callback
  */
 BoobstSocket.prototype.blob = function(uri, stream, callback) {
@@ -712,7 +710,7 @@ BoobstSocket.prototype.blob = function(uri, stream, callback) {
 };
 
 /**
- * Очистить локальное пространство имён и проинициализировать серверные переменные заново
+ * Clear the local namespace and set the server variables again
  * @param {function(this:boobst.BoobstSocket, (null|Error))} [callback] callback
  */
 BoobstSocket.prototype.flush = function(callback) {
