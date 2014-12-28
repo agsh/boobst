@@ -238,10 +238,10 @@ end
 	quit
 	;
 gl(global)
-	new key, inKey, level, isArray, notFirst
-	set key = ""
-	set isArray = $$numberTest(global)
-	set notFirst = 0
+	new key,inKey,level,isArray,notFirst
+	set key=""
+	set isArray=$$numberTest(global)
+	set notFirst=0
 	if isArray  write "["
 	else  write "{"
 	for  set key = $order(@$na(@global@(key)))  quit:key=""  do
@@ -262,36 +262,36 @@ gl(global)
 	else  write "}"
 	quit
 numberTest(global)
-	new key, is
-	set key = "", is = 1, num = 0
+	new key,is
+	set key="",is=1,num=0
 	for  set key = $order(@$na(@global@(key))) quit:key=""  do
-	.	if key'=num set is = 0 quit
-	.	set num = num + 1
+	.	if key'=num set is=0 quit
+	.	set num=num + 1
 	quit is
 	;
 create32kb(global)	
 	new key
-	set key = ""
+	set key=""
 	write """"_$replace(@$na(@global),"""","\""")
-	for  set key = $order(@$na(@global@(key))) quit:key=""  do
+	for  set key=$order(@$na(@global@(key))) quit:key=""  do
 	.	write $replace(@$na(@global@(key)),"""","\""")
 	write """"
 	quit
 	;
 makeValue(val)
-	; if val = +val quit val
+	; if val=+val quit val
 	if val?0.1"-"1(1"0",1(1"1",1"2",1"3",1"4",1"5",1"6",1"7",1"8",1"9").N)0.1(1"."1.N)0.1(1"e+",1"e-".N) quit val
-	if val = "1true" quit "true"
-	if val = "0false" quit "false"
-	set val = $$encodeJSON(val)
+	if val="1true" quit "true"
+	if val="0false" quit "false"
+	set val=$$encodeJSON(val)
 	quit """"_val_""""
 	;	
 encodeJSON(s) ; JSON encoding
 	n a
-	s a = $replace(s,"\","\\")
-	s a = $replace(a,"""","\""")
-	s a = $replace(a,$c(9),"\t")
-	s a = $replace(a,$c(10),"\n") 
-	s a = $replace(a,$c(13),"") 
+	s a=$replace(s,"\","\\")
+	s a=$replace(a,"""","\""")
+	s a=$replace(a,$c(9),"\t")
+	s a=$replace(a,$c(10),"\n")
+	s a=$replace(a,$c(13),"")
 	q a
 	;
