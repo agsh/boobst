@@ -5,7 +5,7 @@
   "description": "Simple Node.js Caché driver",
   "main": "./boobst",
   "scripts": {
-    "test": "mocha"
+    "test": "./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha"
   },
   "repository": {
     "type": "git",
@@ -28,6 +28,9 @@
     "node": ">=0.6"
   },
   "devDependencies": {
-    "mocha": "^2.0.1"
+    "coveralls": ">=2.11.2",
+    "istanbul": ">=0.3.5",
+    "mocha": ">=2.1.0",
+    "mocha-lcov-reporter": "0.0.1"
   }
 }
