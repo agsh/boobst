@@ -1,9 +1,10 @@
 .idea
 .idea/*
 .idea/**/*
-
 node_modules
 test/test.config.js
 test/test.zn.coffee
 test/test.zn.js
 test/test.zn.map
+gt.m
+coverage
