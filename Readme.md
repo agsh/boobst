@@ -148,8 +148,8 @@ bs.set('a', 'value', function(err) {
 Considering that commands are sending to the database in series, we can write code which executing without callbacks.
 
 ``` Javascript
-bs.set('a', '2');
-  .set('b', '2');
+bs.set('a', '2')
+  .set('b', '2')
   .execute('multAB^test' /**program body: "w a*b q"*/, function(err, data) {
     if (err) { console.log(err); return; }
     console.log(data === '4' ? 'successfully executed': 'something wrong');
