@@ -70,7 +70,7 @@ global(subscript, 2) = <third part>
 
 ### Get
 
-Get local or global variable. Notice that data type allways has a Buffer type (for binary data) and you should manually convert it to string or other type if you want.
+Get local or global variable. Notice that data type always has a Buffer type (for binary data) and you should manually convert it to string or other type if you want.
 
 ``` Javascript
 bs.get('^var', ['a', 1], function(err, data) {
@@ -79,7 +79,7 @@ bs.get('^var', ['a', 1], function(err, data) {
 });
 ```
 
-If we have previously save a javascript object with ```set``` or ```saveObject``` command, we can get it back. Driver can automaticly detect the global stucture and converts it into JSON.
+If we have previously save a javascript object with ```set``` or ```saveObject``` command, we can get it back. Driver can automaticly detects the global stucture and converts it into JSON.
 
 ```javascript
 bs.set('^var', ['a', 1], {a: 1, b: [2, 3], c: {d: 4}}, function(err) {
