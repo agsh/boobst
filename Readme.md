@@ -79,7 +79,7 @@ bs.get('^var', ['a', 1], function(err, data) {
 });
 ```
 
-If we have previously save a javascript object with ```set``` or ```saveObject``` command, we can get it back. Driver can automaticly detects the global stucture and converts it into JSON.
+If we have previously saved a javascript object with ```set``` or ```saveObject``` command, we can get it back. Driver can automaticly detects the global stucture and converts it into JSON.
 
 ```javascript
 bs.set('^var', ['a', 1], {a: 1, b: [2, 3], c: {d: 4}}, function(err) {
