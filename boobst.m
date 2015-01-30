@@ -17,13 +17,13 @@ version()
 detailedVersion()
 	quit $$version()_".13"
 start(Port)
-	new io, port, lv
+	new io,port,lv
 	set port=$g(Port,$$port())
 	set lv="boobstServer"_port
 	lock +@(lv):0 e  w "already running" QUIT  ; already running
 	set io="|TCP|1"
 	; "PTAS" ?
-	open io:(/TRA=0:port:"CPAS":/NODELAY=0):20 e  w "Port "_port_" already served" QUIT
+	open io:(/TRA=0:port:"CPAS":/NODELAY=0):20 e  w "Port "_port_" already served" quit
 	write "Boobst Server v.0."_$$detailedVersion()_" started on Port:"_port,!
 	use io
 	;
@@ -41,7 +41,7 @@ child
 
 cleardown
 	;
-	new ignore, pid
+	new ignore,pid
 	;
 	set pid=""
 	f  s pid=$o(^boobst("connected",pid)) q:pid=""  d
@@ -55,8 +55,8 @@ cleardown
 	. . k ^boobst("monitor","output",pid)
 	s pid=""
 	f  s pid=$o(^boobst("monitor","output",pid)) q:pid=""  d
-	. i pid=$j q
-	. s ignore=1
+	. if pid=$j quit
+	. set ignore=1
 	. l +^boobst("connected",pid):0 e  s ignore=0
 	. l -^boobst("connected",pid)
 	. i ignore d
@@ -64,7 +64,7 @@ cleardown
 	QUIT 
  
 command ;
-	new authNeeded, c, crlf, input, output
+	new authNeeded,c,crlf,input,output
 	;
 	;d cleardown
 	set ^boobst("connected",$j)=""
@@ -168,28 +168,28 @@ setEncoding(name)
 	;
 setKey(input)
 	new %nameOfVariable
-	set %nameOfVariable = $piece(input, $char(1), 1)
-	set @%nameOfVariable = $extract(input, $length(%nameOfVariable) + 2, *)
-	set %KEY(%nameOfVariable) = @%nameOfVariable
+	set %nameOfVariable=$piece(input,$char(1),1)
+	set @%nameOfVariable=$extract(input,$length(%nameOfVariable)+2,*)
+	set %KEY(%nameOfVariable)=@%nameOfVariable
 	write "ok.setKey"
 	do end
 	quit
 	;
 set(input)
 	new %nameOfVariable
-	set %nameOfVariable = $piece(input, $char(1), 1)
-	set @%nameOfVariable = $extract(input, $length(%nameOfVariable) + 2, *)
+	set %nameOfVariable=$piece(input,$char(1),1)
+	set @%nameOfVariable=$extract(input,$length(%nameOfVariable)+2,*)
 	write "ok.set"
 	do end
 	quit
 	;
 get(%input)
-	new %params, %name
-	set %params=$piece(%input, $char(1), 1)
+	new %params,%name
+	set %params=$piece(%input,$char(1),1)
 	; params: n - get only node value
 	;         f - force build json w/o first node value
 	;         /empty/ - depends on first node value
-	set %name=$piece(%input, $char(1), 2)
+	set %name=$piece(%input,$char(1),2)
 	if %params="f" do gl(%name) do end quit
 	if $d(@%name)=10 do gl(%name) do end quit
 	write @%name
@@ -203,7 +203,7 @@ order(%nameOfRoutine)
 	;
 zn(%nameOfNS)
 	zn %nameOfNS
-	write "ok.zn."_$zu(5)
+	write "ok.zn.";_$zu(5)
 	write *-3
 	quit
 	;	
@@ -239,42 +239,40 @@ end
 	;
 gl(global)
 	new key,inKey,level,isArray,notFirst
-	set key=""
-	set isArray=$$numberTest(global)
-	set notFirst=0
+	set key="",isArray=$$numberTest(global),notFirst=0
 	if isArray  write "["
 	else  write "{"
-	for  set key = $order(@$na(@global@(key)))  quit:key=""  do
+	for  set key=$order(@$na(@global@(key)))  quit:key=""  do
 	.	;w !,key,") ",$na(@global@(key)),$d(@$na(@global@(key)))
 	.	if notFirst w ","
-	.	else  set notFirst = 1
-	.	set inKey = $na(@global@(key)), level = $d(@inKey)
-	.	if level = 10  do
-	.	.	i 'isArray write """"_$replace(key,"""","\""")_""":"
+	.	else  set notFirst=1
+	.	set inKey=$na(@global@(key)),level=$d(@inKey)
+	.	if level=10  do
+	.	.	i 'isArray write """"_$$replace(key,"""","\""")_""":"
 	.	.	do gl(inKey)
-	.	else  if level = 11 do
+	.	else  if level=11 do
 	.	.	write """"_key_""":"
 	.	.	do create32kb(inKey)
 	.	else  do
 	.	.	if isArray  write $$makeValue(@global@(key))
-	.	.	else  write """"_$replace(key,"""","\""")_""":"_$$makeValue(@global@(key))
+	.	.	else  write """"_$$replace(key,"""","\""")_""":"_$$makeValue(@global@(key))
 	if isArray  write "]"
 	else  write "}"
 	quit
 numberTest(global)
 	new key,is
 	set key="",is=1,num=0
-	for  set key = $order(@$na(@global@(key))) quit:key=""  do
+	for  set key=$order(@$na(@global@(key))) quit:key=""  do
 	.	if key'=num set is=0 quit
-	.	set num=num + 1
+	.	set num=num+1
 	quit is
 	;
 create32kb(global)	
 	new key
 	set key=""
-	write """"_$replace(@$na(@global),"""","\""")
+	write """"_$$replace(@$na(@global),"""","\""")
 	for  set key=$order(@$na(@global@(key))) quit:key=""  do
-	.	write $replace(@$na(@global@(key)),"""","\""")
+	.	write $$replace(@$na(@global@(key)),"""","\""")
 	write """"
 	quit
 	;
@@ -285,13 +283,18 @@ makeValue(val)
 	if val="0false" quit "false"
 	set val=$$encodeJSON(val)
 	quit """"_val_""""
-	;	
+	;
+replace(str,old,new) ;
+	n fnd
+	s fnd=0 f  s fnd=$f(str,old,fnd) q:'fnd  s $e(str,fnd-$l(old),fnd-1)=new
+	q str
+	;
 encodeJSON(s) ; JSON encoding
-	n a
-	s a=$replace(s,"\","\\")
-	s a=$replace(a,"""","\""")
-	s a=$replace(a,$c(9),"\t")
-	s a=$replace(a,$c(10),"\n")
-	s a=$replace(a,$c(13),"")
-	q a
+	new a
+	set a=$$replace(s,"\","\\")
+	set a=$$replace(a,"""","\""")
+	set a=$$replace(a,$c(9),"\t")
+	set a=$$replace(a,$c(10),"\n") 
+	set a=$$replace(a,$c(13),"") 
+	quit a
 	;
