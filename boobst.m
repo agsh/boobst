@@ -114,8 +114,8 @@ loop2
 	goto loop2
 	;
 blob(name)
-	set type = $p(name,"://",1)
-	set where = $p(name,"://",2)
+	set type=$p(name,"://",1)
+	set where=$p(name,"://",2)
 	use $io:(/IOTABLE="RAW"::"-TS"::32000)	
 	if type="file" d
 	.	set IO=$IO
@@ -127,8 +127,8 @@ blob(name)
 	.	.	write "couldn't open device"
 	.	.	goto quit
 	else  if type="global" do
-	.	set it = 0
-	.	set where = "^"_where
+	.	set it=0
+	.	set where="^"_where
 	quit
 	;
 loopBlob
@@ -136,7 +136,7 @@ loopBlob
 	read input s input=$c(c)_input
 	set input=$e(input,1,$l(input))
 	if type="global" do
-	.	set it = it + 1
+	.	set it=it+1
 	.	set @where@(it)=input
 	else  if type="file" do
 	.	use where:(/IOTABLE="RAW"::"-Q+W"::32000)
@@ -145,13 +145,13 @@ loopBlob
 	goto loopBlob
 	;
 halt
-	kill ^boobst("connected", $j)
+	kill ^boobst("connected",$j)
 	halt
 	;
 quit
 	;
-	if '$d(^boobst("monitor", "listener", $j)) goto halt
-	kill ^boobst("monitor", "listener", $j)
+	if '$d(^boobst("monitor","listener",$j)) goto halt
+	kill ^boobst("monitor","listener",$j)
 	goto loop
 	;
 kill(%nameOfVariable)
@@ -169,7 +169,7 @@ setEncoding(name)
 setKey(input)
 	new %nameOfVariable
 	set %nameOfVariable=$piece(input,$char(1),1)
-	set @%nameOfVariable=$extract(input,$length(%nameOfVariable)+2,*)
+	set @%nameOfVariable=$extract(input,$length(%nameOfVariable)+2,$length(input))
 	set %KEY(%nameOfVariable)=@%nameOfVariable
 	write "ok.setKey"
 	do end
@@ -178,7 +178,7 @@ setKey(input)
 set(input)
 	new %nameOfVariable
 	set %nameOfVariable=$piece(input,$char(1),1)
-	set @%nameOfVariable=$extract(input,$length(%nameOfVariable)+2,*)
+	set @%nameOfVariable=$extract(input,$length(%nameOfVariable)+2,$length(input))
 	write "ok.set"
 	do end
 	quit
@@ -288,7 +288,6 @@ replace(str,old,new) ;
 	n fnd
 	s fnd=0 f  s fnd=$f(str,old,fnd) q:'fnd  s $e(str,fnd-$l(old),fnd-1)=new
 	q str
-	;
 encodeJSON(s) ; JSON encoding
 	new a
 	set a=$$replace(s,"\","\\")
