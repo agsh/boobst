@@ -6,7 +6,7 @@ An Intersystems Caché driver that implements basic functionality and can run ro
 Several things have yet to be implemented, but the driver can be used for simple use-cases.
 Server part was inspired by [M.Wire](https://github.com/robtweed/mdb) project. I took from it infinitive loop organization, fork methods and open/use directives.
 
-Main goal of this project is to replace Apache + Weblink connection with Node.js server.
+Main goal of this project is to replace Apache + Weblink connection with Node.js server. Or just to use Cache' as an hierarchical database to store you data (probably JSON data) and execute routines and functions.
 
 Licensed under the The MIT License which can be found at http://opensource.org/licenses/MIT
 
@@ -66,6 +66,42 @@ global(subscript) = <first part>
 global(subscript, 1) = <second part>
 global(subscript, 2) = <third part>
 ...
+```
+
+You can also save JSON objects in your database. Mapping JSON to globals is similar to document storage in this paper: http://www.mgateway.com/docs/universalNoSQL.pdf pp. 19-21
+``` JSON
+{
+    "array": ["a", "ab", "abc"],
+    "object": {
+        "a": "a",
+        "b": 2
+    },
+    "boolean": true,
+    "number": 42
+}
+```
+
+``` Javascript
+var obj = {
+    a: {
+        b: 1
+    },
+    c: [1, 2, 3],
+    d: 'e'
+};
+
+bs.set('^test', obj, function(err) {
+    if (err) { console.log(err); return; }
+    console.log('object saved');
+});
+```
+
+Or, if we use subscripts:
+``` Javascript
+bs.set('^test', ['sub1', 'sub2'], obj, function(err) {
+    if (err) { console.log(err); return; }
+    console.log('object saved');
+});
 ```
 
 ### Get
@@ -166,45 +202,9 @@ bs.set('a', ['abc', 1], 5);
 
 Deprecated. Use `set` command instead which can save javascript objects into database too.
 
-Saves JSON objects in database. Set with object value type implements same behaviour. Mapping JSON to globals is similar to document storage in this paper: http://www.mgateway.com/docs/universalNoSQL.pdf pp. 19-21
-``` JSON
-{
-    "array": ["a", "ab", "abc"],
-    "object": {
-        "a": "a",
-        "b": 2
-    },
-    "boolean": true,
-    "number": 42
-}
-```
-
-``` Javascript
-var obj = {
-    a: {
-        b: 1
-    },
-    c: [1, 2, 3],
-    d: 'e'
-};
-
-bs.saveObject('^test', obj, function(err) {
-    if (err) { console.log(err); return; }
-    console.log('object saved');
-});
-```
-
-Or, if we use subscripts:
-``` Javascript
-bs.saveObject('^test', ['sub1', 'sub2'], obj, function(err) {
-    if (err) { console.log(err); return; }
-    console.log('object saved');
-});
-```
-
 ### Blob
 
-Send stream to the database server. file://path/to/the/file saves file on the disk, global://blob saves file into global.
+Send stream to the database server. file://path/to/the/file saves file on the disk, global://blobGlobalName saves file into `^blobGlobalName` global.
 > Note: if you are using node.js v0.8 or later with old Streams API, it is better to pause you stream after creating.
 > There is no such problem in node.js v0.10 with "Streams2" API.
 
