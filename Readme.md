@@ -126,6 +126,25 @@ bs.set('^var', ['a', 1], {a: 1, b: [2, 3], c: {d: 4}}, function(err) {
 });
 ```
 
+This is a table of mapping different data types from javascript to Cache' and backwards:
+
+|Data type|JS sample value|DB representation after `set` command|JS representation after `get` command|
+|---------|---------------|-------------------------------------|-------------------------------------|
+|Number   |42             |42                                   |42                                   |
+|         |42.666         |42.666                               |42.666                               |
+|         |3.16e+920      |3.16e+920                            |3.16e920                             |
+|Boolean  |true    |"1true" (to distinguish with numbers but save compatibility with if operator)|true|
+|         |false          |"0false"                             |false                                |
+|String   |'sample'       |"sample"                             |'sample'                             |
+|Object   |{ a: 1,        |("a")=1                              |{a:1,b:'a',c:{d:0}}                  |
+|         |  b: 'a',      |("b")="a"                            |                                     |
+|         |  c: {d, 0}}   |("c","d")=0                          |                                     |
+|Array    |[4,8,15,16]    |(0)=4,(1)=8,(2)=15,(3)=16            |[4,8,15,16]                          |
+|Function |function(){}   |-                                    |-                                    |
+|Date     |new Date()     |"Sat Jan 01 2000 12:00:00"           |'Sat Jan 01 2000 12:00:00'           |
+|Null     |null           |-                                    |-                                    |
+|Undefined|undefined      |-                                    |-                                    |
+
 In the case when we have wrong global stucture (which differs from what we got with `set` command), `get` command will return only node value. But we can try to force JSON generation with setting second/third optional argument `forceJSON` to `true`.
 
 ```javascript
