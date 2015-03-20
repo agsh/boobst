@@ -233,3 +233,6 @@ bs.blob('global://blob', fs.createReadStream('/home/und/00109721.jpg'), function
     console.log('file saved');
 });
 ```
+
+## Useful links
+[Socket programming](http://www.mumpster.org/viewtopic.php?f=10&t=1672)
