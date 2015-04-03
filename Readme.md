@@ -10,7 +10,7 @@ Main goal of this project is to replace Apache + Weblink connection with Node.js
 
 Licensed under the The MIT License which can be found at http://opensource.org/licenses/MIT
 
-##Installation
+## Installation
 
 via npm:
 

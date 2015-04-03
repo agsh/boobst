@@ -756,7 +756,7 @@ function isValidCacheVar(name) {
 }
 
 function createNameFromSubscript(name, subscript) {
-	if (subscript.length > 0) {
+	if (Array.isArray(subscript) && subscript.length > 0) {
 		return name + '(' + subscript.map(function(sub) {return '"' + sub + '"';}).join(',') + ')';
 	} else {
 		return name;
