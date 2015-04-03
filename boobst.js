@@ -672,12 +672,11 @@ BoobstSocket.prototype.zn = function(name, callback) {
  * @param {function(this:boobst.BoobstSocket, (null|Error))} [callback] callback
  */
 BoobstSocket.prototype.kill = function(name, subscripts, callback) {
-	if (typeof callback === 'undefined') {
-		isValidCacheVar(name);
-		callback = (typeof subscripts === 'function' ? subscripts : null);
-	} else {
-		name = createNameFromSubscript(name, subscripts);
+	if (typeof callback === 'undefined' && typeof subscripts === 'function') {
+		callback = subscripts;
+		subscripts = [];
 	}
+	name = createNameFromSubscript(name, subscripts);
 	this._tryCommand({
 		cmd: BCMD.KILL,
 		name: name,
@@ -689,7 +688,7 @@ BoobstSocket.prototype.kill = function(name, subscripts, callback) {
 /**
  * Send binary data
  * @param {string} uri uri format is: file://<file_path> or global://<global_name_w/o_^>
- * @param {Stream} stream data stream
+ * @param {Buffer} stream data stream
  * @param {function(this:boobst.BoobstSocket, (null|Error))} [callback] callback
  */
 BoobstSocket.prototype.blob = function(uri, stream, callback) {
