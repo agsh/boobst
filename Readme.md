@@ -234,5 +234,14 @@ bs.blob('global://blob', fs.createReadStream('/home/und/00109721.jpg'), function
 });
 ```
 
+### Increment
+
+Increments a global/local variable by a numeric value. Works just like `$increment` command in MUMPS. Arguments are:
+
+- `name` global or local name
+- `subscript` (optional) subscripts
+- `value` (optional, defaults 1)
+- `callback` callback function with error and new incremented value
+
 ## Useful links
 [Socket programming](http://www.mumpster.org/viewtopic.php?f=10&t=1672)
