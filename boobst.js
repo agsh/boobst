@@ -726,7 +726,7 @@ BoobstSocket.prototype.ping = function(callback) {
 	return this;
 };
 
-BoobstSocket.prototype.inc = function(name, subscripts, value, callback) {
+BoobstSocket.prototype.increment = function(name, subscripts, value, callback) {
 	if (callback === undefined) {
 		switch (typeof subscripts) {
 			case 'number':
@@ -747,6 +747,7 @@ BoobstSocket.prototype.inc = function(name, subscripts, value, callback) {
 	this.get(name, subscripts, function(err, data) {
 		var inc = Number(data.toString());
 		inc = (isNaN(inc) ? 0 : inc) + value;
+		// TODO global lock
 		this.set(name, subscripts, inc, function(err) {
 			if (err) {
 				callback(err);
