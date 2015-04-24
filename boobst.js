@@ -515,7 +515,7 @@ BoobstSocket.prototype.setEncoding = function(value, callback) {
  * Set the value of variable or global
  * @param {string} name variable or global name (global name starts with `^`)
  * @param {string|Buffer|Array<string>} [subscripts]
- * @param {string|Buffer|function} value variable value
+ * @param {string|Buffer|function|number|Date} value variable value
  * @param {?function(this:boobst.BoobstSocket, (null|Error), string)} [callback] callback
  * @return {boobst.BoobstSocket|BoobstSocket}
  */
@@ -724,6 +724,37 @@ BoobstSocket.prototype.flush = function(callback) {
 BoobstSocket.prototype.ping = function(callback) {
 	this._tryCommand({cmd: BCMD.PING, callback: callback});
 	return this;
+};
+
+BoobstSocket.prototype.inc = function(name, subscripts, value, callback) {
+	if (callback === undefined) {
+		switch (typeof subscripts) {
+			case 'number':
+				callback = value;
+				value = subscripts;
+				subscripts = [];
+				break;
+			case 'function':
+				callback = subscripts;
+				value = 1;
+				subscripts = [];
+				break;
+			case 'object':
+				callback = value;
+				value = 1;
+		}
+	}
+	this.get(name, subscripts, function(err, data) {
+		var inc = Number(data.toString());
+		inc = (isNaN(inc) ? 0 : inc) + value;
+		this.set(name, subscripts, inc, function(err) {
+			if (err) {
+				callback(err);
+			} else {
+				callback(null, inc);
+			}
+		});
+	});
 };
 
 /**
