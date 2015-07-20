@@ -121,9 +121,9 @@ function onData(data) {
 				this.command = BCMD.NOP;
 				this._runCommandFromQueue();
 			};
-			this.onDataInput(data);
+			this.onDataCommon(data);
 			break;
-		case BCMD.SETENCODING: case BCMD.KEY: case BCMD.SET: case BCMD.KILL: case BCMD.EXECUTE: case BCMD.FLUSH: case BCMD.PING: case BCMD.GET: case BCMD.ORDER: case BCMD.XECUTE:
+		case BCMD.SETENCODING: case BCMD.KEY: case BCMD.SET: case BCMD.KILL: case BCMD.EXECUTE: case BCMD.FLUSH: case BCMD.PING: case BCMD.GET: case BCMD.ORDER: case BCMD.XECUTE: case BCMD.INPUT:
 		this.onDataCommon(data);
 			break;
 		case BCMD.ZN:
