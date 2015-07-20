@@ -17,6 +17,7 @@ const
 	// , VALID_CACHE_VAR_RE = /^\^?%?[\-A-Z\.a-z]+[\w\d]*(\(("[A-Za-z_\-\.\+\\/0-9]+"|\d)(,("[A-Za-z_\-\.\+\\/0-9]+"|\d))*\))?$/
 	, CACHE_MAX_SIZE = 32754,
 	/**
+	 * @readonly
 	 * @enum {number}
 	 */
     BCMD = {
@@ -35,6 +36,7 @@ const
 		, BLOB: 12
 		, ORDER: 13
 		, XECUTE: 14
+		, INPUT: 15
 	}
 	;
 
@@ -113,6 +115,13 @@ function onData(data) {
 	switch (this.command) {
 		case BCMD.NOP:
 			this.emit('debug', 'Data on NOP command: ' + data.toString());
+			this.command = BCMD.INPUT;
+			this.callback = function(data) {
+				this.emit('message', data);
+				this.command = BCMD.NOP;
+				this._runCommandFromQueue();
+			};
+			this.onDataInput(data);
 			break;
 		case BCMD.SETENCODING: case BCMD.KEY: case BCMD.SET: case BCMD.KILL: case BCMD.EXECUTE: case BCMD.FLUSH: case BCMD.PING: case BCMD.GET: case BCMD.ORDER: case BCMD.XECUTE:
 		this.onDataCommon(data);
@@ -252,6 +261,10 @@ BoobstSocket.prototype.onDataCommon = function(data) {
 		}
 	}
 };
+
+BoobstSocket.prototype.onDataInput = function(data) {
+
+}
 
 /**
  * Connect event handler
