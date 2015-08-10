@@ -13,9 +13,9 @@ port()
 	quit 6666
 	;
 version()
-	quit 8
+	quit 9
 detailedVersion()
-	quit $$version()_".13"
+	quit $$version()_".0"
 start(Port)
 	new io, port, lv
 	set port=$g(Port,$$port())
