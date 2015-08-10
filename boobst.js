@@ -235,16 +235,16 @@ BoobstSocket.prototype.connect = function(callback) {
  */
 BoobstSocket.prototype.onDataCommon = function(data) {
 	// check if this chunk is the last one
-	// it must have \6\6 characters at the end
-	if ((data.length > 1) && (data[data.length - 1] === 6) && (data[data.length - 2] === 6)) {
+	// it must have \0 character at the end
+	if ((data.length > 0) && (data[data.length - 1] === 0)) {
 		if (this.out && (this.command === BCMD.EXECUTE || this.command === BCMD.XECUTE)){ // if we're writing into stream
-			this.out.end(data.slice(0, data.length - 2));
+			this.out.end(data.slice(0, data.length - 1));
 			delete this.out;
 			if (this.callback) { // if we have callback
 				this.callback.call(this, null); // we haven't get this.data here
 			}
 		} else {
-			this.data = Buffer.concat([this.data, data.slice(0, data.length - 2)]);
+			this.data = Buffer.concat([this.data, data.slice(0, data.length - 1)]);
 			if (this.callback) { // if we have callback
 				this.callback.call(this, null, this.data);
 			}

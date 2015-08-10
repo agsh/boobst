@@ -233,7 +233,7 @@ ping
 	;
 end
 	;write $c(0)
-	write $c(6)_$c(6)
+	write $c(0)
 	write *-3
 	quit
 	;
