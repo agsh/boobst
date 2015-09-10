@@ -79,12 +79,13 @@ function onClose(transmittionErr) {
 		}
 		if (this.command === BCMD.BLOB && this.callback) { // if we disconnected under .blob command
 			this.callback.call(this, null);
-		}
-		this.emit('debug', 'disconnected');
-		if (this.data) {
-			this.emit('debug', this.data.toString());
-			if (this.callback) {
-				this.callback.call(this, new Error(this.data));
+		} else {
+			this.emit('debug', 'disconnected');
+			if (this.data) {
+				this.emit('debug', this.data.toString());
+				if (this.callback) {
+					this.callback.call(this, new Error(this.data));
+				}
 			}
 		}
 		this.command = BCMD.HI;
