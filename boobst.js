@@ -2,7 +2,7 @@
  * Boobst module (boobst.js)
  * A tiny database driver for DBMS Cache'
  * @author Andrew D. Laptev <a.d.laptev@gmail.com>
- * @version 0.8.14
+ * @version 0.9.0
  * @license MIT
  **/
 
