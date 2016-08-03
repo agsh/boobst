@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: /home/und/github/boobst/boobst.js</title>
-    
+    <title>JSDoc: Source: boobst.js</title>
+
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
     <!--[if lt IE 9]>
@@ -16,10 +16,11 @@
 <body>
 
 <div id="main">
+
+    <h1 class="page-title">Source: boobst.js</h1>
+
     
-    <h1 class="page-title">Source: /home/und/github/boobst/boobst.js</h1>
-    
-    
+
 
 
     
@@ -27,11 +28,10 @@
         <article>
             <pre class="prettyprint source linenums"><code>/**
  * Boobst module (boobst.js)
- * Маленький клиент для работы с СУБД Cache'
- * Для отладки используйте метод .emit('debug')
+ * A tiny database driver for DBMS Cache'
  * @author Andrew D. Laptev &lt;a.d.laptev@gmail.com>
- * @version 0.8.4
- * @license AGPL
+ * @version 0.9.1
+ * @license MIT
  **/
 
 var net = require('net')
@@ -41,10 +41,11 @@ var net = require('net')
 const
 	EOL = ' ' + String.fromCharCode(0) // TODO избавиться от лишнего байта в s input=$e(input,1,$l(input)-1)
 	, EON = String.fromCharCode(1)
-	, VERSION = 8
+	, VERSION = 9
 	// , VALID_CACHE_VAR_RE = /^\^?%?[\-A-Z\.a-z]+[\w\d]*(\(("[A-Za-z_\-\.\+\\/0-9]+"|\d)(,("[A-Za-z_\-\.\+\\/0-9]+"|\d))*\))?$/
 	, CACHE_MAX_SIZE = 32754,
 	/**
+	 * @readonly
 	 * @enum {number}
 	 */
     BCMD = {
@@ -63,6 +64,7 @@ const
 		, BLOB: 12
 		, ORDER: 13
 		, XECUTE: 14
+		, INPUT: 15
 	}
 	;
 
@@ -71,8 +73,7 @@ const
  * @private
  */
 function onConnection() {
-	// в новых версиях протокола при коннекте сервер отдаёт приветствие
-	// так что callback'и теперь вызываются при обработке команды BCMD.HI
+	// unused event handler cause on connection server first of all sends greeting BCMD.HI to client
 }
 
 /**
@@ -106,12 +107,13 @@ function onClose(transmittionErr) {
 		}
 		if (this.command === BCMD.BLOB &amp;&amp; this.callback) { // if we disconnected under .blob command
 			this.callback.call(this, null);
-		}
-		this.emit('debug', 'disconnected');
-		if (this.data) {
-			this.emit('debug', this.data.toString());
-			if (this.callback) {
-				this.callback.call(this, new Error(this.data));
+		} else {
+			this.emit('debug', 'disconnected');
+			if (this.data) {
+				this.emit('debug', this.data.toString());
+				if (this.callback) {
+					this.callback.call(this, new Error(this.data));
+				}
 			}
 		}
 		this.command = BCMD.HI;
@@ -121,7 +123,6 @@ function onClose(transmittionErr) {
 		} else {
 			this._connectionTimeout += 1000;
 		}
-
 		setTimeout(function() {
 			this.connect();
 		}.bind(this), this._connectionTimeout);
@@ -143,8 +144,15 @@ function onData(data) {
 	switch (this.command) {
 		case BCMD.NOP:
 			this.emit('debug', 'Data on NOP command: ' + data.toString());
+			this.command = BCMD.INPUT;
+			this.callback = function(data) {
+				this.emit('message', data);
+				this.command = BCMD.NOP;
+				this._runCommandFromQueue();
+			};
+			this.onDataCommon(data);
 			break;
-		case BCMD.SETENCODING: case BCMD.KEY: case BCMD.SET: case BCMD.KILL: case BCMD.EXECUTE: case BCMD.FLUSH: case BCMD.PING: case BCMD.GET: case BCMD.ORDER: case BCMD.XECUTE:
+		case BCMD.SETENCODING: case BCMD.KEY: case BCMD.SET: case BCMD.KILL: case BCMD.EXECUTE: case BCMD.FLUSH: case BCMD.PING: case BCMD.GET: case BCMD.ORDER: case BCMD.XECUTE: case BCMD.INPUT:
 		this.onDataCommon(data);
 			break;
 		case BCMD.ZN:
@@ -154,6 +162,7 @@ function onData(data) {
 			// do nothing, this error should be caught by onError event
 			break;
 		case BCMD.HI:
+			this.killme = false;
 			this.onDataGreeting(data);
 			break;
 		default:
@@ -205,6 +214,7 @@ var BoobstSocket = function(options) {
 	}
 	this.command = BCMD.HI;
 	this.connected = false;
+	this.killme = false;
 	/**
 	 * Connection socket
 	 * @type {net.Socket}
@@ -218,7 +228,7 @@ var BoobstSocket = function(options) {
 	this.socket.on('error', onError.bind(this));
 };
 
-// наследуемся от events.EventEmitter
+// events.EventEmitter inheritance
 util.inherits(BoobstSocket, events.EventEmitter);
 
 /**
@@ -250,20 +260,20 @@ BoobstSocket.prototype.connect = function(callback) {
 /**
  * Common event handler
  * @private
- * @param {Buffer} data     data chunk
+ * @param {Buffer} data binary data chunk
  */
 BoobstSocket.prototype.onDataCommon = function(data) {
-	// проверяем, является ли этот чанк последним куском передаваемых данных
-	// it must have \6\6 characters at the end
-	if ((data.length > 1) &amp;&amp; (data[data.length - 1] === 6) &amp;&amp; (data[data.length - 2] === 6)) {
+	// check if this chunk is the last one
+	// it must have \0 character at the end
+	if ((data.length > 0) &amp;&amp; (data[data.length - 1] === 0)) {
 		if (this.out &amp;&amp; (this.command === BCMD.EXECUTE || this.command === BCMD.XECUTE)){ // if we're writing into stream
-			this.out.end(data.slice(0, data.length - 2));
+			this.out.end(data.slice(0, data.length - 1));
 			delete this.out;
 			if (this.callback) { // if we have callback
 				this.callback.call(this, null); // we haven't get this.data here
 			}
 		} else {
-			this.data = Buffer.concat([this.data, data.slice(0, data.length - 2)]);
+			this.data = Buffer.concat([this.data, data.slice(0, data.length - 1)]);
 			if (this.callback) { // if we have callback
 				this.callback.call(this, null, this.data);
 			}
@@ -281,10 +291,14 @@ BoobstSocket.prototype.onDataCommon = function(data) {
 	}
 };
 
+BoobstSocket.prototype.onDataInput = function(data) {
+
+};
+
 /**
  * Connect event handler
  * @private
- * @param {Buffer} data     greeting
+ * @param {Buffer} data greeting
  */
 BoobstSocket.prototype.onDataGreeting = function(data) {
 	this.emit('debug', 'connected');
@@ -299,9 +313,9 @@ BoobstSocket.prototype.onDataGreeting = function(data) {
 		return;
 	}
 
-	// работаем с нужной нам версией протокола
+	// working with properly protocol version
 	this.id = parseInt(dataStr[1], 10);
-	// если при подключении мы находимся в отличной области, первым делом переключимся в нужную
+	// if we're in the different namespace when connected just switch to the right one
 	if (this.ns) {
 		if (this.ns !== dataStr[2]) {
 			this.queue.unshift({
@@ -325,9 +339,9 @@ BoobstSocket.prototype.onDataGreeting = function(data) {
 };
 
 /**
- * Обработчик данных, пришедших от сервера при смене namespace
+ * Namespace change event handler
  * @private
- * @param {buffer.Buffer} data информация о смене
+ * @param {Buffer} data информация о смене
  */
 BoobstSocket.prototype.onDataZn = function(data) {
 	var str = data.toString().split('.');
@@ -427,6 +441,7 @@ BoobstSocket.prototype._tryCommand = function(commandObject) { // попытат
 				this.socket.write('Z ' + commandObject.name + EOL);
 				break;
 			case BCMD.DISCONNECT:
+				this.killme = true; // this is state to disconnect gracefully
 				this.command = BCMD.HI; // we are ready to the next greeting from server
 				this.socket.end();
 				break;
@@ -464,14 +479,14 @@ BoobstSocket.prototype.execute = function(name, outStream, callback) {
 
 /**
  * Evaluates any code on the server. Dangerous thing disabled on server by default
- * @param {string} eval text to xecute
+ * @param {string} xecute text to xecute
  * @param {stream.Stream} [outStream] stream to send data
  * @param {function(this:boobst.BoobstSocket, (null|Error), Object)} callback callback
  */
-BoobstSocket.prototype.xecute = function(eval, outStream, callback) {
+BoobstSocket.prototype.xecute = function(xecute, outStream, callback) {
 	var cmd = {
 		cmd: BCMD.XECUTE,
-		name: eval
+		name: xecute
 	};
 	if (outStream) {
 		if (typeof outStream === 'function') {
@@ -539,11 +554,11 @@ BoobstSocket.prototype.setEncoding = function(value, callback) {
 };
 
 /**
- * Установить значение переменной или глобала
- * @param {string} name имя переменной или глобала (начинается с ^)
+ * Set the value of variable or global
+ * @param {string} name variable or global name (global name starts with `^`)
  * @param {string|Buffer|Array&lt;string>} [subscripts]
- * @param {string|Buffer|function} value значение переменной
- * @param {?function(this:boobst.BoobstSocket, (null|Error), string)} [callback] callback
+ * @param {string|Buffer|function|number|Date} value variable value
+ * @param {?function(this:boobst.BoobstSocket, Error?, string?)} [callback] callback
  * @return {boobst.BoobstSocket|BoobstSocket}
  */
 BoobstSocket.prototype.set = function(name, subscripts, value, callback) {
@@ -565,7 +580,9 @@ BoobstSocket.prototype.set = function(name, subscripts, value, callback) {
 	}
 
 	// casting
-	if (typeOfValue === 'number') { // number casts to string
+	if (typeOfValue === 'undefined' || value === null) {
+		return this;
+	} else if (typeOfValue === 'number') { // number casts to string
 		value = value.toString();
 		typeOfValue = 'string';
 	} else if (typeOfValue === 'boolean') {
@@ -639,9 +656,9 @@ BoobstSocket.prototype.set = function(name, subscripts, value, callback) {
 
 /**
  * Save javascript-оbject in Cache'
- * @param {string} name имя переменной или глобала (начинается с ^)
+ * @param {string} variable or global name (global name starts with `^`)
  * @param {Array.&lt;string>} [subscripts]
- * @param {Object} object js-объект
+ * @param {Object} object javascript-object
  * @param {function(?Error)} [callback] callback
  * @deprecated
  */
@@ -665,7 +682,7 @@ BoobstSocket.prototype.order = BoobstSocket.prototype.next = function(name, subs
 
 /**
  * Changes namespace
- * @param {string} name Существующий namespace
+ * @param {string} name existing namespace
  * @param {function} [callback] callback
  */
 BoobstSocket.prototype.zn = function(name, callback) {
@@ -697,12 +714,11 @@ BoobstSocket.prototype.zn = function(name, callback) {
  * @param {function(this:boobst.BoobstSocket, (null|Error))} [callback] callback
  */
 BoobstSocket.prototype.kill = function(name, subscripts, callback) {
-	if (typeof callback === 'undefined') {
-		isValidCacheVar(name);
-		callback = (typeof subscripts === 'function' ? subscripts : null);
-	} else {
-		name = createNameFromSubscript(name, subscripts);
+	if (typeof callback === 'undefined' &amp;&amp; typeof subscripts === 'function') {
+		callback = subscripts;
+		subscripts = [];
 	}
+	name = createNameFromSubscript(name, subscripts);
 	this._tryCommand({
 		cmd: BCMD.KILL,
 		name: name,
@@ -713,8 +729,8 @@ BoobstSocket.prototype.kill = function(name, subscripts, callback) {
 
 /**
  * Send binary data
- * @param {string} uri uri format is: file://&lt;file_path> или global://&lt;global_name_w/o_^>
- * @param {Stream} stream поток данных
+ * @param {string} uri uri format is: file://&lt;file_path> or global://&lt;global_name_w/o_^>
+ * @param {Stream} stream data stream
  * @param {function(this:boobst.BoobstSocket, (null|Error))} [callback] callback
  */
 BoobstSocket.prototype.blob = function(uri, stream, callback) {
@@ -735,7 +751,7 @@ BoobstSocket.prototype.blob = function(uri, stream, callback) {
 };
 
 /**
- * Очистить локальное пространство имён и проинициализировать серверные переменные заново
+ * Clear the local namespace and set the server variables again
  * @param {function(this:boobst.BoobstSocket, (null|Error))} [callback] callback
  */
 BoobstSocket.prototype.flush = function(callback) {
@@ -752,12 +768,43 @@ BoobstSocket.prototype.ping = function(callback) {
 	return this;
 };
 
+BoobstSocket.prototype.increment = function(name, subscripts, value, callback) {
+	if (callback === undefined) {
+		switch (typeof subscripts) {
+			case 'number':
+				callback = value;
+				value = subscripts;
+				subscripts = [];
+				break;
+			case 'function':
+				callback = subscripts;
+				value = 1;
+				subscripts = [];
+				break;
+			case 'object':
+				callback = value;
+				value = 1;
+		}
+	}
+	this.get(name, subscripts, function(err, data) {
+		var inc = Number(data.toString());
+		inc = (isNaN(inc) ? 0 : inc) + value;
+		// TODO global lock
+		this.set(name, subscripts, inc, function(err) {
+			if (err) {
+				callback(err);
+			} else {
+				callback(null, inc);
+			}
+		});
+	});
+};
+
 /**
  * Disconnect from the db
  * @param {function(this:boobst.BoobstSocket, (null|Error))} [callback] callback
  */
 BoobstSocket.prototype.disconnect = function(callback) {
-	this.killme = true;
 	this._tryCommand({cmd: BCMD.DISCONNECT, callback: callback});
 	return this;
 };
@@ -783,7 +830,7 @@ function isValidCacheVar(name) {
 }
 
 function createNameFromSubscript(name, subscript) {
-	if (subscript.length > 0) {
+	if (Array.isArray(subscript) &amp;&amp; subscript.length > 0) {
 		return name + '(' + subscript.map(function(sub) {return '"' + sub + '"';}).join(',') + ')';
 	} else {
 		return name;
@@ -799,7 +846,8 @@ BoobstSocket.prototype.log = function(text) {
 //--------------------------------------------------------------------------
 BoobstSocket.prototype.port = 6666;
 
-exports.BoobstSocket = BoobstSocket;</code></pre>
+exports.BoobstSocket = BoobstSocket;
+</code></pre>
         </article>
     </section>
 
@@ -809,13 +857,13 @@ exports.BoobstSocket = BoobstSocket;</code></pre>
 </div>
 
 <nav>
-    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="BoobstSocket.html">BoobstSocket</a></li></ul><h3>Global</h3><ul><li><a href="global.html#BCMD">BCMD</a></li><li><a href="global.html#net">net</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="BoobstSocket.html">BoobstSocket</a></li></ul><h3>Global</h3><ul><li><a href="global.html#BCMD">BCMD</a></li><li><a href="global.html#net">net</a></li></ul>
 </nav>
 
-<br clear="both">
+<br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha3</a> on Wed Nov 12 2014 20:02:44 GMT+0300 (MSK)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Wed Aug 03 2016 15:56:44 GMT+0300 (MSK)
 </footer>
 
 <script> prettyPrint(); </script>

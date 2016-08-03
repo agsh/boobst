@@ -2,7 +2,7 @@
  * Boobst module (boobst.js)
  * A tiny database driver for DBMS Cache'
  * @author Andrew D. Laptev <a.d.laptev@gmail.com>
- * @version 0.9.0
+ * @version 0.9.1
  * @license MIT
  **/
 
@@ -265,7 +265,7 @@ BoobstSocket.prototype.onDataCommon = function(data) {
 
 BoobstSocket.prototype.onDataInput = function(data) {
 
-}
+};
 
 /**
  * Connect event handler
@@ -313,7 +313,7 @@ BoobstSocket.prototype.onDataGreeting = function(data) {
 /**
  * Namespace change event handler
  * @private
- * @param {buffer.Buffer} data информация о смене
+ * @param {Buffer} data информация о смене
  */
 BoobstSocket.prototype.onDataZn = function(data) {
 	var str = data.toString().split('.');
@@ -451,14 +451,14 @@ BoobstSocket.prototype.execute = function(name, outStream, callback) {
 
 /**
  * Evaluates any code on the server. Dangerous thing disabled on server by default
- * @param {string} eval text to xecute
+ * @param {string} xecute text to xecute
  * @param {stream.Stream} [outStream] stream to send data
  * @param {function(this:boobst.BoobstSocket, (null|Error), Object)} callback callback
  */
-BoobstSocket.prototype.xecute = function(eval, outStream, callback) {
+BoobstSocket.prototype.xecute = function(xecute, outStream, callback) {
 	var cmd = {
 		cmd: BCMD.XECUTE,
-		name: eval
+		name: xecute
 	};
 	if (outStream) {
 		if (typeof outStream === 'function') {
@@ -530,7 +530,7 @@ BoobstSocket.prototype.setEncoding = function(value, callback) {
  * @param {string} name variable or global name (global name starts with `^`)
  * @param {string|Buffer|Array<string>} [subscripts]
  * @param {string|Buffer|function|number|Date} value variable value
- * @param {?function(this:boobst.BoobstSocket, (null|Error), string)} [callback] callback
+ * @param {?function(this:boobst.BoobstSocket, Error?, string?)} [callback] callback
  * @return {boobst.BoobstSocket|BoobstSocket}
  */
 BoobstSocket.prototype.set = function(name, subscripts, value, callback) {
