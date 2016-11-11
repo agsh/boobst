@@ -192,7 +192,8 @@ get(%input)
 	set %name=$piece(%input, $char(1), 2)
 	if %params="f" do gl(%name) do end quit
 	if $d(@%name)=10 do gl(%name) do end quit
-	write @%name
+	; write @%name
+	do create32kbString(%name)
 	do end
 	quit
 	;
@@ -269,7 +270,7 @@ numberTest(global)
 	.	set num = num + 1
 	quit is
 	;
-create32kb(global)	
+create32kb(global)
 	new key
 	set key = ""
 	write """"_$replace(@$na(@global),"""","\""")
@@ -278,6 +279,14 @@ create32kb(global)
 	write """"
 	quit
 	;
+create32kbString(global)
+	new key
+	set key = ""
+	write @$na(@global)
+	for  set key = $order(@global@(key)) quit:key=""  do
+	.	write $g(@global@(key))
+	quit
+	;	
 makeValue(val)
 	; if val = +val quit val
 	if val?0.1"-"1(1"0",1(1"1",1"2",1"3",1"4",1"5",1"6",1"7",1"8",1"9").N)0.1(1"."1.N)0.1(1"e+",1"e-".N) quit val
