@@ -281,11 +281,12 @@ create32kb(global)
 	;
 create32kbString(global)
 	new key
-	set key = ""
-	write @$na(@global)
-	for  set key = $order(@global@(key)) quit:key=""  do
-	.	write $g(@global@(key))
-	quit
+  set key = ""
+  write @$na(@global)
+  for  set key = $order(@global@(key)) quit:key=""  do
+  .	if +key'=key quit
+  .	write $g(@global@(key))
+  quit
 	;	
 makeValue(val)
 	; if val = +val quit val
